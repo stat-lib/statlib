@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Yongxi Lin. All rights reserved.
+Copyright (c) 2026 Bjørn Kjos-Hanssen. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yongxi Lin
+Authors: Bjørn Kjos-Hanssen
 -/
 
 module
@@ -72,84 +72,78 @@ noncomputable def M (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → ℝ≥0∞)
       data := fun _ => id
       measurable_data := by simp;exact measurable_id
       decision_rule := fun _ => {
-        toFun := fun x => by
-          by_cases H : x ∈ RNP θ₀ θ₁ η (fun θ x => (ρ θ x).toReal)
-          exact Measure.dirac true
-          exact Measure.dirac false
+        toFun := fun x => ite (x ∈ RNP θ₀ θ₁ η (fun θ x => (ρ θ x).toReal))
+          (Measure.dirac true) (Measure.dirac false)
         measurable' := by
           unfold RNP
           simp;apply Measurable.ite
           · simp
-            refine Measurable.le' ?_ ?_
-            · refine Measurable.mul ?_ ?_
-              · simp
-              · refine Measurable.ennreal_toReal ?_;apply h
-            · refine Measurable.ennreal_toReal ?_;apply h
+            refine Measurable.le' ?_ (h _).ennreal_toReal
+            · refine Measurable.mul (by simp) (h _).ennreal_toReal
           · simp
           · simp
       }
       loss_function := fun _ b c => ite (b=c) 0 1
-      measurable_loss_function := fun _ => by
-        exact measurable_from_prod_countable_right fun x ⦃t⦄ a => trivial}
+      measurable_loss_function := fun _ =>
+        measurable_from_prod_countable_right fun x ⦃t⦄ a => trivial}
 
 
 theorem NP.intRNP₀ {θ₀ : ℝ} {R : Set ℝ} {ρ : ℝ → ℝ → ℝ}
     (hρ : 0 ≤ ρ)
-  (hI : Integrable (ρ θ₀) volume)
-  (hAE : AEStronglyMeasurable (R.indicator 1 * ρ θ₀) volume) :
- Integrable (R.indicator 1 * ρ θ₀) volume
-:= by
-      apply integrable_of_le_of_le
-      · exact hAE
-      · change 0 ≤ᶠ[ae volume] _
-        simp only [EventuallyLE, Filter.Eventually, ae, Pi.zero_apply, Pi.mul_apply,
-          mem_ofCountableUnion]
-        suffices volume (∅: Set ℝ) = 0 by
-          convert this
-          ext x
-          simp only [mem_compl_iff, mem_setOf_eq, not_le, mem_empty_iff_false, iff_false, not_lt]
-          apply mul_nonneg
-          · simp only [indicator, Pi.one_apply]
-            split_ifs with g₀
-            · simp
-            · simp
-          tauto
-        simp
-      change _ ≤ᶠ[ae volume] ρ θ₀
-      simp [EventuallyLE, Filter.Eventually, ae]
-      suffices volume (∅: Set ℝ) = 0 by
-        convert this
-        ext x
-        simp [Set.indicator]
+    (hI : Integrable (ρ θ₀) volume)
+    (hAE : AEStronglyMeasurable (R.indicator 1 * ρ θ₀) volume) :
+    Integrable (R.indicator 1 * ρ θ₀) volume := by
+  apply integrable_of_le_of_le
+  · exact hAE
+  · change 0 ≤ᶠ[ae volume] _
+    simp only [EventuallyLE, Filter.Eventually, ae, Pi.zero_apply, Pi.mul_apply,
+      mem_ofCountableUnion]
+    suffices volume (∅: Set ℝ) = 0 by
+      convert this
+      ext x
+      simp only [mem_compl_iff, mem_setOf_eq, not_le, mem_empty_iff_false, iff_false, not_lt]
+      apply mul_nonneg
+      · simp only [indicator, Pi.one_apply]
         split_ifs with g₀
         · simp
-        · tauto
-      simp
-      refine (lintegral_ofReal_ne_top_iff_integrable ?_ ?_).mp ?_
-      · exact aestronglyMeasurable_zero
-      · exact EventuallyLE.refl (ae volume) 0
-      · simp
-      exact hI
+        · simp
+      tauto
+    simp
+  change _ ≤ᶠ[ae volume] ρ θ₀
+  simp [EventuallyLE, Filter.Eventually, ae]
+  suffices volume (∅: Set ℝ) = 0 by
+    convert this
+    ext x
+    simp [Set.indicator]
+    split_ifs with g₀
+    · simp
+    · tauto
+  simp
+  refine (lintegral_ofReal_ne_top_iff_integrable ?_ ?_).mp ?_
+  · exact aestronglyMeasurable_zero
+  · exact EventuallyLE.refl (ae volume) 0
+  · simp
+  exact hI
 
 theorem NP.intRNP₁ {θ₁ : ℝ} {R : Set ℝ} {ρ : ℝ → ℝ → ℝ}
     (hρ : 0 ≤ ρ)
-  (hI : Integrable (ρ θ₁) volume)
-  (hAE : AEStronglyMeasurable (R.indicator 1 * ρ θ₁) volume) :
-  Integrable (R.indicator 1 * ρ θ₁) volume := by
-      apply NP.intRNP₀ hρ hI hAE
+    (hI : Integrable (ρ θ₁) volume)
+    (hAE : AEStronglyMeasurable (R.indicator 1 * ρ θ₁) volume) :
+    Integrable (R.indicator 1 * ρ θ₁) volume := by
+  apply NP.intRNP₀ hρ hI hAE
 
 /-- A basic arithmetic lemma that is used in
 Wikipedia's proof of Neyman--Pearson. -/
 lemma wiki_arith {η α : ℝ} (hηp : 0 ≤ η)
-   {I₁ J₁ I₀ : ℝ} (hα' : I₀ ≤ α)
-   (hi : 0 ≤ J₁ - η * α - I₁ + η * I₀) : I₁ ≤ J₁ := by
-      suffices 0 ≤ J₁ - I₁ by linarith
-      have : 0 ≤ J₁ - I₁ - η * (α - I₀) := by linarith
-      apply le_trans this
-      have : η * (α - I₀) ≥ 0 := by
-        apply mul_nonneg hηp
-        linarith
-      linarith
+    {I₁ J₁ I₀ : ℝ} (hα' : I₀ ≤ α)
+    (hi : 0 ≤ J₁ - η * α - I₁ + η * I₀) : I₁ ≤ J₁ := by
+  suffices 0 ≤ J₁ - I₁ by linarith
+  have : 0 ≤ J₁ - I₁ - η * (α - I₀) := by linarith
+  apply le_trans this
+  have : η * (α - I₀) ≥ 0 := by
+    apply mul_nonneg hηp
+    linarith
+  linarith
 
 /-- The basic inequality that gets Wikipedia's proof of N--P
 off the ground. -/
