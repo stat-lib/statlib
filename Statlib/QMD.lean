@@ -57,16 +57,19 @@ section Definitions
 
 /-- Quadratic mean differentiability within a set.  The `L²(μ)` remainder is `o(y - x)` as
 `y → x` within `s`. We do not assume that the derivative is continuous. -/
+-- ANCHOR: hasQuadraticMeanDeriv
 def HasQuadraticMeanDerivWithinAt {Ω E : Type*} {mΩ : MeasurableSpace Ω} [AddCommGroup E]
     [Module ℝ E] [TopologicalSpace E] (P : E → Measure Ω) (μ : Measure Ω) (s : Set E) (x : E)
     (A : E →ₗ[ℝ] (Ω →₂[P x] ℝ)) : Prop :=
   (fun y =>
     lpNorm (fun ω => √((P y).rnDeriv μ ω).toReal - √((P x).rnDeriv μ ω).toReal -
     2⁻¹ * A (y - x) ω * √((P x).rnDeriv μ ω).toReal) 2 μ) =o[ℝ; 𝓝[s] x] (fun y => y - x)
+-- ANCHOR_END: hasQuadraticMeanDeriv
 
 /-- Hadamard-style quadratic mean differentiability within a set. Along every path `θ + t • a` with
 `t → 0`, `a → h`, and eventually staying in `s`, the `L²(μ)` remainder with direction `h` tends to
 zero. We do not assume that the derivative is continuous. -/
+-- ANCHOR: hasHadamardQuadraticMeanDeriv
 def HasHadamardQuadraticMeanDerivWithinAt {Ω E : Type*} {mΩ : MeasurableSpace Ω} [AddCommMonoid E]
     [Module ℝ E] [TopologicalSpace E] (P : E → Measure Ω) (μ : Measure Ω) (s : Set E) (θ : E)
     (A : E →ₗ[ℝ] (Ω →₂[P θ] ℝ)) : Prop :=
@@ -75,6 +78,7 @@ def HasHadamardQuadraticMeanDerivWithinAt {Ω E : Type*} {mΩ : MeasurableSpace 
     p.1⁻¹ * lpNorm (fun ω => √((P (θ + p.1 • p.2)).rnDeriv μ ω).toReal -
     √((P θ).rnDeriv μ ω).toReal -
     2⁻¹ * A (p.1 • h) ω * √((P θ).rnDeriv μ ω).toReal) 2 μ) l (𝓝 0)
+-- ANCHOR_END: hasHadamardQuadraticMeanDeriv
 
 /-- A quadratic-mean derivative implies that the scaled QMD remainder along any local path tends to
 zero, with the linear term evaluated at `p.1 • p.2`. -/
@@ -352,6 +356,7 @@ theorem hasHadamardQuadraticMeanDerivWithinAt_iff {Ω E : Type*}
         exact abs_inv_mul_lpNorm_score_smul_le (hs _ hθ) A p.1 (p.2 - h)
 
 /-- A quadratic-mean derivative within a set is a Hadamard QMD derivative. -/
+-- ANCHOR: qmdImpliesHadamard
 theorem HasQuadraticMeanDerivWithinAt.hasHadamardQuadraticMeanDerivWithinAt {Ω E : Type*}
     {mΩ : MeasurableSpace Ω} [SeminormedAddCommGroup E] [NormedSpace ℝ E] {P : E → Measure Ω}
     {μ : Measure Ω} [SigmaFinite μ] {s : Set E} {θ : E} {A : E →L[ℝ] (Ω →₂[P θ] ℝ)}
@@ -360,6 +365,7 @@ theorem HasQuadraticMeanDerivWithinAt.hasHadamardQuadraticMeanDerivWithinAt {Ω 
     HasHadamardQuadraticMeanDerivWithinAt P μ s θ A :=
   (hasHadamardQuadraticMeanDerivWithinAt_iff A hθ hprob hs).2
     fun _ _ hzero hh he => hA.tendsto_local_path_remainder hzero hh he
+-- ANCHOR_END: qmdImpliesHadamard
 
 end Definitions
 
@@ -624,6 +630,8 @@ private lemma Lp.integrable_sqrt_rnDeriv_sub_sqrt_rnDeriv_sub_const_mul_mul_sqrt
     ((memLp_sqrt_rnDeriv m₁ μ).add (memLp_sqrt_rnDeriv m₂ μ))
 
 /-- **Mean zero score** for a Hadamard quadratic mean derivative. -/
+-- ANCHOR: integralScoreEqZero
+-- ANCHOR: integralScoreEqZeroSig
 theorem integral_score_eq_zero {Ω E : Type*} {mΩ : MeasurableSpace Ω} [AddCommMonoid E]
     [Module ℝ E] [TopologicalSpace E] {P : E → Measure Ω} {μ : Measure Ω} [SigmaFinite μ]
     {s : Set E} {θ h : E} {A : E →ₗ[ℝ] (Ω →₂[P θ] ℝ)}
@@ -632,6 +640,7 @@ theorem integral_score_eq_zero {Ω E : Type*} {mΩ : MeasurableSpace Ω} [AddCom
     [l.NeBot] (hzero : Tendsto Prod.fst l (𝓝[≠] 0)) (hh : Tendsto Prod.snd l (𝓝 h))
     (he : ∀ᶠ p in l, θ + p.1 • p.2 ∈ s) :
     ∫ ω, A h ω ∂P θ = 0 := by
+-- ANCHOR_END: integralScoreEqZeroSig
   refine tendsto_nhds_unique (zero_add (∫ ω, A h ω ∂P θ) ▸
     (tendsto_zero hA hθ hprob hs (tendsto_nhds_of_tendsto_nhdsWithin hzero) hh he).add
     (tendsto_integral_score hA hθ hprob hs hzero hh he)) ?_
@@ -689,6 +698,7 @@ theorem integral_score_eq_zero {Ω E : Type*} {mΩ : MeasurableSpace Ω} [AddCom
         rw [integral_const_mul_of_integrable (c := p.1), inv_mul_cancel_left₀ hn]
         simpa [mul_assoc] using (Lp.integrable_mul_sqrt_rnDeriv_mul_sqrt_rnDeriv_add _ (hs _ hθ)
           (A h)).const_mul 2⁻¹
+-- ANCHOR_END: integralScoreEqZero
 
 /-- **Mean zero score** when the parameter set `s` is a neighborhood of `θ`. -/
 theorem integral_score_eq_zero_of_mem_nhds {Ω E : Type*} {mΩ : MeasurableSpace Ω} [AddCommMonoid E]
