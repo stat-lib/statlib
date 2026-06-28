@@ -7,6 +7,7 @@ module
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 public import Mathlib.Data.Real.StarOrdered
 public import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
+public import Mathlib.Probability.Moments.Variance
 
 /-!
 # Tweedie distribution: integral of the (compound-Poisson) density
@@ -662,3 +663,287 @@ theorem tweedieProbMeasure_expectation {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 <
     (hp₁ : 1 < p) (hp₂ : p < 2) :
     ∫ y, y ∂ (tweedieProbMeasure hμ hφ hp₁ hp₂) = μ :=
   tweedieMeasure_expectation hμ hφ hp₁ hp₂
+
+
+
+/-! ## Variance of the Tweedie distribution
+
+We prove the famous identity `Var = φ · μ^p`.  The argument mirrors the mean
+computation: we evaluate the second moment `∫ y², dP` term-by-term and obtain
+`μ² + φ·μ^p`, and then the variance is `E[Y²] - (E[Y])² = φ·μ^p`.
+-/
+
+/-
+Closed form of `y² * tw_G j y` for `y > 0`: the same constant as in `tw_pt`, but with
+the power `y^(-jα+1)` (the factor `y²` cancels one power of `y` and adds one).
+-/
+lemma tw_y2G_pt (μ : ℝ) {φ p : ℝ} (hp₁ : 1 < p) (hφ : 0 < φ) (j : ℕ) {y : ℝ} (hy : 0 < y) :
+    y ^ 2 * tw_G μ φ p j y
+    = (Real.exp (-tw_z μ φ p) * (p-1)^(((2-p)/(1-p))*(j:ℝ))
+        / (φ^((j:ℝ)*(1-(2-p)/(1-p))) * (2-p)^j * (Nat.factorial j)
+          * Real.Gamma (-(j:ℝ)*((2-p)/(1-p)))))
+      * (y ^ (-(j:ℝ)*((2-p)/(1-p)) + 1) * Real.exp (-(μ ^ (1 - p) / (φ * (p - 1)) * y))) := by
+  convert congr_arg ( fun x : ℝ => y * x ) ( tw_yG_pt μ hp₁ hφ j hy ) using 1 ; ring;
+  rw [ Real.rpow_add hy, Real.rpow_one ] ; ring
+
+/-
+Each `y² * tw_G j` is integrable on `(0, ∞)`.
+-/
+lemma tw_y2G_integrable_on {μ φ p : ℝ} (hp₁ : 1 < p) (hp₂ : p < 2) (hμ : 0 < μ) (hφ : 0 < φ)
+    (j : ℕ) : IntegrableOn (fun y => y ^ 2 * tw_G μ φ p j y) (Set.Ioi 0) := by
+  by_cases hj : j = 0;
+  · unfold tw_G; aesop;
+  · have h_integrable : IntegrableOn (fun y => y ^ (-(j:ℝ)*((2-p)/(1-p)) + 1) * Real.exp (-(μ ^ (1 - p) / (φ * (p - 1)) * y))) (Set.Ioi 0) := by
+      have h_integrable : ∀ {s b : ℝ}, -1 < s → 0 < b → IntegrableOn (fun y => y ^ s * Real.exp (-b * y)) (Set.Ioi 0) := by
+        intro s b hs hb;
+        convert ( integrableOn_rpow_mul_exp_neg_mul_rpow ( show -1 < s by linarith ) ( show 1 ≤ ( 1 : ℝ ) by norm_num ) hb ) using 1 ; norm_num;
+      convert h_integrable _ _ using 1 <;> norm_num [ neg_div, div_neg ];
+      congr! 1;
+      · nlinarith [ show ( j : ℝ ) ≥ 1 by exact Nat.one_le_cast.mpr ( Nat.pos_of_ne_zero hj ), mul_div_cancel₀ ( 2 - p ) ( by linarith : ( 1 - p ) ≠ 0 ) ];
+      · exact div_pos ( Real.rpow_pos_of_pos hμ _ ) ( mul_pos hφ ( by linarith ) );
+    refine' h_integrable.const_mul _ |> fun h => h.congr _;
+    exact Real.exp ( -tw_z μ φ p ) * ( p - 1 ) ^ ( ( ( 2 - p ) / ( 1 - p ) ) * j ) / ( φ ^ ( ( j : ℝ ) * ( 1 - ( 2 - p ) / ( 1 - p ) ) ) * ( 2 - p ) ^ j * ( j.factorial : ℝ ) * Real.Gamma ( - ( j : ℝ ) * ( ( 2 - p ) / ( 1 - p ) ) ) );
+    filter_upwards [ MeasureTheory.ae_restrict_mem measurableSet_Ioi ] with y hy using by rw [ tw_y2G_pt μ hp₁ hφ j hy ] ;
+
+/-
+Recurrence relating the second-moment per-term integral to the mean per-term integral:
+`∫ y², G_j = ((-jα+1)·(1/b)) · ∫ y, G_j`, where `b = μ^(1-p)/(φ(p-1))`, i.e. `1/b = φ(p-1)/μ^(1-p)`.
+This follows from `∫ y^(s+1) e^{-by} = ((s+1)/b) ∫ y^s e^{-by}` (a Gamma recurrence).
+-/
+lemma tw_2nd_moment_recurrence {μ φ p : ℝ} (hp₁ : 1 < p) (hp₂ : p < 2) (hμ : 0 < μ) (hφ : 0 < φ)
+    (j : ℕ) :
+    ∫ y in Set.Ioi (0:ℝ), y ^ 2 * tw_G μ φ p j y
+      = ((-(j:ℝ)*((2-p)/(1-p)) + 1) * (φ * (p-1) / μ^(1-p)))
+        * ∫ y in Set.Ioi (0:ℝ), y * tw_G μ φ p j y := by
+  by_cases hj : j = 0;
+  · unfold tw_G; aesop;
+  · have h_integral : ∫ y in Set.Ioi (0:ℝ), y ^ 2 * tw_G μ φ p j y = (∫ y in Set.Ioi (0:ℝ), y ^ (-(j:ℝ)*((2-p)/(1-p)) + 1) * Real.exp (-(μ ^ (1 - p) / (φ * (p - 1)) * y))) * (Real.exp (-tw_z μ φ p) * (p-1)^(((2-p)/(1-p))*(j:ℝ)) / (φ^((j:ℝ)*(1-(2-p)/(1-p))) * (2-p)^j * (Nat.factorial j) * Real.Gamma (-(j:ℝ)*((2-p)/(1-p))))) := by
+      rw [ ← MeasureTheory.integral_mul_const ] ; refine' MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun y hy => _ ; rw [ tw_y2G_pt μ hp₁ hφ j hy ] ; ring;
+    have h_integral : ∫ y in Set.Ioi (0:ℝ), y * tw_G μ φ p j y = (∫ y in Set.Ioi (0:ℝ), y ^ (-(j:ℝ)*((2-p)/(1-p))) * Real.exp (-(μ ^ (1 - p) / (φ * (p - 1)) * y))) * (Real.exp (-tw_z μ φ p) * (p-1)^(((2-p)/(1-p))*(j:ℝ)) / (φ^((j:ℝ)*(1-(2-p)/(1-p))) * (2-p)^j * (Nat.factorial j) * Real.Gamma (-(j:ℝ)*((2-p)/(1-p))))) := by
+      rw [ ← MeasureTheory.integral_mul_const ] ; refine' MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun y hy => _ ; rw [ tw_yG_pt μ hp₁ hφ j hy ] ; ring;
+    rw [ ‹∫ y in Set.Ioi 0, y ^ 2 * tw_G μ φ p j y = _›, h_integral ];
+    have h_integral : ∫ y in Set.Ioi (0:ℝ), y ^ (-(j:ℝ)*((2-p)/(1-p)) + 1) * Real.exp (-(μ ^ (1 - p) / (φ * (p - 1)) * y)) = (1 / (μ ^ (1 - p) / (φ * (p - 1)))) ^ (-(j:ℝ)*((2-p)/(1-p)) + 2) * Real.Gamma (-(j:ℝ)*((2-p)/(1-p)) + 2) := by
+      convert integral_rpow_mul_exp_neg_mul_Ioi _ _ using 1;
+      · exact MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun x hx => by ring_nf
+      · nlinarith [ show ( j : ℝ ) ≥ 1 by exact Nat.one_le_cast.mpr ( Nat.pos_of_ne_zero hj ), mul_div_cancel₀ ( 2 - p ) ( by linarith : ( 1 - p ) ≠ 0 ) ];
+      · exact div_pos ( Real.rpow_pos_of_pos hμ _ ) ( mul_pos hφ ( by linarith ) );
+    rw [ h_integral, show ( ∫ y in Set.Ioi 0, y ^ ( - ( j : ℝ ) * ( ( 2 - p ) / ( 1 - p ) ) ) * Real.exp ( - ( μ ^ ( 1 - p ) / ( φ * ( p - 1 ) ) * y ) ) ) = ( 1 / ( μ ^ ( 1 - p ) / ( φ * ( p - 1 ) ) ) ) ^ ( - ( j : ℝ ) * ( ( 2 - p ) / ( 1 - p ) ) + 1 ) * Real.Gamma ( - ( j : ℝ ) * ( ( 2 - p ) / ( 1 - p ) ) + 1 ) from ?_ ];
+    · rw [ show ( -j * ( ( 2 - p ) / ( 1 - p ) ) + 2 : ℝ ) = ( -j * ( ( 2 - p ) / ( 1 - p ) ) + 1 ) + 1 by ring, Real.rpow_add_one ] <;> norm_num;
+      · rw [ show ( - ( j * ( ( 2 - p ) / ( 1 - p ) ) ) + 1 + 1 : ℝ ) = ( - ( j * ( ( 2 - p ) / ( 1 - p ) ) ) + 1 ) + 1 by ring, Real.Gamma_add_one ( by nlinarith [ show ( j : ℝ ) ≥ 1 by exact Nat.one_le_cast.mpr ( Nat.pos_of_ne_zero hj ), mul_div_cancel₀ ( 2 - p ) ( by linarith : ( 1 - p ) ≠ 0 ) ] ) ] ; ring;
+      · exact ⟨ ⟨ hφ.ne', by linarith ⟩, by positivity ⟩;
+    · convert integral_rpow_mul_exp_neg_mul_Ioi _ _ using 1;
+      · norm_num;
+      · nlinarith [ show ( j : ℝ ) ≥ 1 by exact Nat.one_le_cast.mpr ( Nat.pos_of_ne_zero hj ), mul_div_cancel₀ ( 2 - p ) ( by linarith : ( 1 - p ) ≠ 0 ) ];
+      · exact div_pos ( Real.rpow_pos_of_pos hμ _ ) ( mul_pos hφ ( by linarith ) )
+
+/-- The per-term second-moment integral.  (Valid for all `j`, since both sides vanish at `j = 0`.) -/
+lemma tw_2nd_moment_term {μ φ p : ℝ} (hp₁ : 1 < p) (hp₂ : p < 2) (hμ : 0 < μ) (hφ : 0 < φ) (j : ℕ) :
+    ∫ y in Set.Ioi (0:ℝ), y ^ 2 * tw_G μ φ p j y
+      = (φ * (2-p) / μ^(1-p)) * (φ * (p-1) / μ^(1-p))
+        * (((j:ℝ) + (2-p)/(p-1) * (j:ℝ)^2) * Real.exp (-tw_z μ φ p)
+            * (tw_z μ φ p) ^ j / (Nat.factorial j)) := by
+  rw [tw_2nd_moment_recurrence hp₁ hp₂ hμ hφ, tw_mean_term hp₁ hp₂ hμ hφ]
+  have h1p : (1 - p) ≠ 0 := by linarith
+  have hpm1 : (p - 1) ≠ 0 := by linarith
+  have hμp : μ ^ (1 - p) ≠ 0 := by positivity
+  field_simp
+  ring
+
+/-
+Summability of `fun j => (j:ℝ)^2 * z^j / j!` for any real `z`.
+-/
+lemma tw_summable_n2_pow (z : ℝ) :
+    Summable (fun j : ℕ => (j:ℝ)^2 * z ^ j / (Nat.factorial j)) := by
+  refine' summable_of_ratio_norm_eventually_le _ _;
+  exact 2 / 3;
+  · norm_num;
+  · -- For large enough $n$, the term $(n+1) * |z| / n^2$ will be less than $2/3$.
+    have h_bound : ∃ N : ℕ, ∀ n ≥ N, (n + 1) * |z| / n^2 ≤ 2 / 3 := by
+      exact ⟨ ⌈3 * |z|⌉₊ + 1, fun n hn => by rw [ div_le_iff₀ ] <;> nlinarith [ Nat.le_ceil ( 3 * |z| ), show ( n : ℝ ) ≥ ⌈3 * |z|⌉₊ + 1 by exact_mod_cast hn, abs_nonneg z ] ⟩;
+    obtain ⟨ N, hN ⟩ := h_bound; filter_upwards [ Filter.eventually_ge_atTop N, Filter.eventually_gt_atTop 0 ] with n hn hn' ; specialize hN n hn ; simp_all +decide [ Nat.factorial_succ]
+    convert mul_le_mul_of_nonneg_right hN ( show 0 ≤ ( n ^ 2 * |z| ^ n / n.factorial : ℝ ) by positivity ) using 1 ; norm_cast ; ring_nf;
+    -- Simplifying the right-hand side:
+    field_simp
+    ring_nf
+    push_cast; ring;
+
+/-
+The "Poisson second moment" identity: `∑' j, j² z^j / j! = (z²+z) · exp z`.
+-/
+lemma tw_tsum_n2_pow (z : ℝ) :
+    ∑' j : ℕ, (j:ℝ)^2 * z ^ j / (Nat.factorial j) = (z^2 + z) * Real.exp z := by
+  -- We'll use the fact that $\sum_{j=0}^{\infty} j(j-1) \frac{z^j}{j!} = z^2 e^z$.
+  have h1 : ∑' j : ℕ, (j * (j - 1) : ℝ) * z ^ j / j.factorial = z^2 * Real.exp z := by
+    -- Split the sum into two parts: one for $j=0$ and $j=1$, and the rest.
+    have h_split : ∑' j : ℕ, (j * (j - 1) : ℝ) * z^j / j.factorial = ∑' j : ℕ, if j ≥ 2 then (j * (j - 1) : ℝ) * z^j / j.factorial else 0 := by
+      exact tsum_congr fun n => by rcases n with ( _ | _ | n ) <;> norm_num;
+    -- For $j \geq 2$, we can simplify the term $(j * (j - 1) : ℝ) * z^j / j.factorial$ to $z^2 * z^{j-2} / (j-2)!$.
+    have h_simplify : ∀ j : ℕ, j ≥ 2 → (j * (j - 1) : ℝ) * z^j / j.factorial = z^2 * z^(j-2) / (j-2).factorial := by
+      intro j hj; rcases j with ( _ | _ | j ) <;> norm_num [ Nat.factorial ] at *;
+      rw [ div_eq_div_iff ] <;> first | positivity | ring!;
+    -- Substitute the simplified terms back into the sum.
+    have h_sum_simplified : ∑' j : ℕ, (if j ≥ 2 then (j * (j - 1) : ℝ) * z^j / j.factorial else 0) = ∑' j : ℕ, z^2 * z^j / j.factorial := by
+      rw [ ← tsum_eq_tsum_of_ne_zero_bij ];
+      use fun x => x.val - 2;
+      · exact fun x y h => by rcases x with ⟨ _ | _ | x, hx ⟩ <;> rcases y with ⟨ _ | _ | y, hy ⟩ <;> cases h <;> trivial;
+      · intro x hx; use ⟨ x + 2, by aesop ⟩ ; aesop;
+      · aesop;
+    simp_all +decide [ Real.exp_eq_exp_ℝ, NormedSpace.exp_eq_tsum_div ];
+    simp +decide only [mul_div_assoc];
+    exact _root_.tsum_mul_left;
+  convert congr_arg₂ ( · + · ) h1 ( tw_tsum_n_pow z ) using 1;
+  · rw [ ← Summable.tsum_add ] ; congr ; ext j ; ring;
+    · contrapose! h1;
+      rw [ tsum_eq_zero_of_not_summable h1 ] ; norm_num [ Real.exp_ne_zero ];
+      exact fun h => h1 <| by subst h; exact ⟨ _, hasSum_single 0 fun j hj => by aesop ⟩ ;
+    · convert tw_summable_n_pow z using 1;
+  · ring
+
+/-
+Summability of the second-moment integral norms (needed to swap `∫` and `∑'`).
+-/
+lemma tw_2nd_moment_summable_norm (μ φ p : ℝ) (hp₁ : 1 < p) (hp₂ : p < 2) (hμ : 0 < μ) (hφ : 0 < φ) :
+    Summable (fun j : ℕ => ∫ y in Set.Ioi (0:ℝ), ‖y ^ 2 * tw_G μ φ p j y‖) := by
+  have h_summable : Summable (fun j : ℕ => ∫ y in Set.Ioi (0:ℝ), y ^ 2 * tw_G μ φ p j y) := by
+    simp_all +decide [ tw_2nd_moment_term ];
+    refine' Summable.mul_left _ _;
+    convert Summable.add ( Summable.mul_left ( Real.exp ( -tw_z μ φ p ) ) ( tw_summable_n_pow ( tw_z μ φ p ) ) ) ( Summable.mul_left ( Real.exp ( -tw_z μ φ p ) * ( 2 - p ) / ( p - 1 ) ) ( tw_summable_n2_pow ( tw_z μ φ p ) ) ) using 2 ; ring;
+  convert h_summable using 1
+  generalize_proofs at *;
+  exact funext fun j => MeasureTheory.setIntegral_congr_fun measurableSet_Ioi fun y hy => by rw [ Real.norm_of_nonneg ( mul_nonneg ( sq_nonneg _ ) ( tw_G_nonneg μ φ p hp₁ hp₂ hφ j hy ) ) ] ;
+
+/-
+The series of per-term second-moment values sums to `μ² + φ·μ^p`.
+-/
+lemma tw_2nd_moment_tsum {μ φ p : ℝ} (hp₁ : 1 < p) (hp₂ : p < 2) (hμ : 0 < μ) (hφ : 0 < φ) :
+    ∑' j : ℕ, (φ * (2-p) / μ^(1-p)) * (φ * (p-1) / μ^(1-p))
+        * (((j:ℝ) + (2-p)/(p-1) * (j:ℝ)^2) * Real.exp (-tw_z μ φ p)
+            * (tw_z μ φ p) ^ j / (Nat.factorial j))
+      = μ^2 + φ * μ^p := by
+  -- Factor out common terms and apply the series summations.
+  have h_series : ∑' j : ℕ, (j + (2 - p) / (p - 1) * j^2) * Real.exp (-tw_z μ φ p) * (tw_z μ φ p) ^ j / j.factorial =
+    Real.exp (-tw_z μ φ p) * (tw_z μ φ p * Real.exp (tw_z μ φ p) + (2 - p) / (p - 1) * ((tw_z μ φ p)^2 + tw_z μ φ p) * Real.exp (tw_z μ φ p)) := by
+      have h_series : ∑' j : ℕ, (j : ℝ) * tw_z μ φ p ^ j / j.factorial = tw_z μ φ p * Real.exp (tw_z μ φ p) ∧ ∑' j : ℕ, (j : ℝ) ^ 2 * tw_z μ φ p ^ j / j.factorial = (tw_z μ φ p ^ 2 + tw_z μ φ p) * Real.exp (tw_z μ φ p) := by
+        exact ⟨ by simpa using tw_tsum_n_pow ( tw_z μ φ p ), by simpa using tw_tsum_n2_pow ( tw_z μ φ p ) ⟩;
+      convert congr_arg₂ ( · + · ) ( congr_arg ( fun x : ℝ => x * Real.exp ( -tw_z μ φ p ) ) h_series.1 ) ( congr_arg ( fun x : ℝ => x * ( 2 - p ) * Real.exp ( -tw_z μ φ p ) / ( p - 1 ) ) h_series.2 ) using 1;
+      · norm_num [ add_mul, mul_assoc, mul_div_assoc, tsum_mul_left, tsum_mul_right ];
+        convert congr_arg₂ ( · + · ) ( tsum_mul_right ) ( tsum_mul_right ) using 1;
+        · rw [ ← Summable.tsum_add ] ; congr ; ext j ; ring;
+          · exact Summable.mul_right _ <| by simpa only [ mul_div_assoc ] using tw_summable_n_pow _;
+          · convert Summable.mul_right ( ( 2 - p ) * ( Real.exp ( -tw_z μ φ p ) / ( p - 1 ) ) ) ( tw_summable_n2_pow ( tw_z μ φ p ) ) using 2 ; ring;
+        · infer_instance;
+        · infer_instance;
+        · infer_instance;
+        · infer_instance;
+      · ring;
+  convert congr_arg ( fun x : ℝ => ( φ * ( 2 - p ) / μ ^ ( 1 - p ) ) * ( φ * ( p - 1 ) / μ ^ ( 1 - p ) ) * x ) h_series using 1;
+  · exact _root_.tsum_mul_left;
+  · unfold tw_z; norm_num [ Real.rpow_sub hμ ] ; ring_nf
+    norm_num [ Real.exp_neg, Real.exp_ne_zero ] ; ring_nf
+    field_simp;
+    grind
+
+/-
+The second moment of the continuous part: `∫ y, tweediePDF μ φ p y * y² = μ² + φ·μ^p`.
+-/
+lemma tweedie_2nd_moment_value {μ φ p : ℝ} (hp₁ : 1 < p) (hp₂ : p < 2) (hμ : 0 < μ) (hφ : 0 < φ) :
+    ∫ y, tweediePDF μ φ p y * y ^ 2 = μ^2 + φ * μ^p := by
+  -- Apply the decomposition of the integral into the sum of integrals over the components and use the fact that the integral of `y^2` with respect to the point mass part is 0.
+  have h_decomp : ∫ y, tweediePDF μ φ p y * y ^ 2 = ∫ y in Set.Ioi (0:ℝ), ∑' j : ℕ, y ^ 2 * tw_G μ φ p j y := by
+    rw [ ← MeasureTheory.integral_indicator ] <;> norm_num [ Set.indicator ];
+    congr with x ; by_cases hx : 0 < x <;> simp +decide [ hx, tweediePDF ];
+    convert congr_arg ( fun y : ℝ => x ^ 2 * y ) ( tw_pointwise μ φ p x ) using 1 ; ring_nf
+    exact _root_.tsum_mul_left;
+  rw [ h_decomp, ← tw_2nd_moment_tsum hp₁ hp₂ hμ hφ, ← MeasureTheory.integral_tsum_of_summable_integral_norm ];
+  · exact tsum_congr fun j => tw_2nd_moment_term hp₁ hp₂ hμ hφ j;
+  · exact fun j => tw_y2G_integrable_on hp₁ hp₂ hμ hφ j;
+  · convert tw_2nd_moment_summable_norm μ φ p hp₁ hp₂ hμ hφ using 1
+
+/-
+`tweediePDF μ φ p y * y²` is integrable.
+-/
+lemma tweedie_2nd_moment_integrable {μ φ p : ℝ} (hp₁ : 1 < p) (hp₂ : p < 2) (hμ : 0 < μ) (hφ : 0 < φ) :
+    Integrable (fun y => tweediePDF μ φ p y * y ^ 2) := by
+  have := tweedie_2nd_moment_value hp₁ hp₂ hμ hφ;
+  exact ( by contrapose! this; rw [ MeasureTheory.integral_undef this ] ; positivity )
+
+/-
+The second moment of the Tweedie measure equals `μ² + φ·μ^p`.
+-/
+theorem tweedieMeasure_2nd_moment {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 < φ)
+    (hp₁ : 1 < p) (hp₂ : p < 2) :
+    ∫ y, y ^ 2 ∂(tweedieMeasure μ (show (0:ℝ) ≤ φ by linarith) hp₁ hp₂) = μ^2 + φ * μ^p := by
+  set f : ℝ → ℝ≥0 := fun y => (tweediePDF μ φ p y).toNNReal
+  have h_withDensity : volume.withDensity (tweediePDF' μ hp₁ (by linarith) hφ.le) = volume.withDensity (fun y => f y) := by
+    refine' MeasureTheory.withDensity_congr_ae _;
+    filter_upwards [ ] with y using ( ENNReal.ofReal_eq_coe_nnreal _ ).symm;
+  convert congr_arg ( fun x : ℝ => x + 0 ) ( tweedie_2nd_moment_value hp₁ ( by linarith ) hμ hφ ) using 1
+  generalize_proofs at *;
+  · unfold tweedieMeasure; norm_num [ h_withDensity ] ;
+    rw [ MeasureTheory.integral_add_measure ] <;> norm_num [ tweedie_prob_zero ];
+    · convert integral_withDensity_eq_integral_smul₀ _ ( fun y => y ^ 2 ) using 1;
+      · congr! 1
+        generalize_proofs at *;
+        ext; simp [f]; ring_nf
+        exact mul_eq_mul_right_iff.mpr ( Or.inl <| by rw [ Real.toNNReal_of_nonneg <| tweediePDF_nonneg ( by linarith ) hp₁ ( by linarith ) ] ; norm_cast );
+      · have h_integrable : MeasureTheory.Integrable (fun y => tweediePDF μ φ p y) volume := by
+          exact ( by by_contra h; have := tweediePDF_integral hp₁ ( by linarith ) hμ hφ; rw [ MeasureTheory.integral_undef h ] at this; linarith [ Real.exp_pos ( -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) ), Real.exp_lt_one_iff.mpr ( show -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) < 0 by exact div_neg_of_neg_of_pos ( neg_neg_of_pos ( Real.rpow_pos_of_pos hμ _ ) ) ( mul_pos hφ ( by linarith ) ) ) ] )
+        generalize_proofs at *;
+        exact h_integrable.1.aemeasurable.real_toNNReal;
+    · constructor;
+      · exact Continuous.aestronglyMeasurable ( continuous_pow 2 );
+      · simp +decide [ HasFiniteIntegral ];
+    · have h_integrable : Integrable (fun y => f y • y ^ 2) volume := by
+        convert tweedie_2nd_moment_integrable hp₁ hp₂ hμ hφ using 1
+        generalize_proofs at *;
+        ext y; exact mul_eq_mul_right_iff.mpr (Or.inl <| Real.coe_toNNReal _ <| tweediePDF_nonneg (by linarith) hp₁ (by linarith));
+      rw [ MeasureTheory.integrable_withDensity_iff_integrable_smul₀ ];
+      · exact h_integrable;
+      · have h_integrable : AEMeasurable (fun y => tweediePDF μ φ p y) volume := by
+          have h_integrable : Integrable (fun y => tweediePDF μ φ p y) volume := by
+            exact ( by by_contra h; have := tweediePDF_integral hp₁ ( by linarith ) hμ hφ; rw [ MeasureTheory.integral_undef h ] at this; linarith [ Real.exp_pos ( -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) ), Real.exp_lt_one_iff.mpr ( show -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) < 0 by exact div_neg_of_neg_of_pos ( neg_neg_of_pos ( Real.rpow_pos_of_pos hμ _ ) ) ( mul_pos hφ ( by linarith ) ) ) ] )
+          generalize_proofs at *; exact h_integrable.1.aemeasurable;
+        generalize_proofs at *;
+        exact AEMeasurable.real_toNNReal h_integrable;
+  · ring
+
+/-- The second moment of the Tweedie probability measure equals `μ² + φ·μ^p`. -/
+theorem tweedieProbMeasure_2nd_moment {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 < φ)
+    (hp₁ : 1 < p) (hp₂ : p < 2) :
+    ∫ y, y ^ 2 ∂ (tweedieProbMeasure hμ hφ hp₁ hp₂) = μ^2 + φ * μ^p :=
+  tweedieMeasure_2nd_moment hμ hφ hp₁ hp₂
+
+/-- **The variance of the Tweedie distribution is `φ · μ^p`.**
+Here the variance is expressed as `E[Y²] - (E[Y])²`. -/
+theorem tweedieProbMeasure_variance {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 < φ)
+    (hp₁ : 1 < p) (hp₂ : p < 2) :
+    (∫ y, y ^ 2 ∂ (tweedieProbMeasure hμ hφ hp₁ hp₂))
+      - (∫ y, y ∂ (tweedieProbMeasure hμ hφ hp₁ hp₂)) ^ 2 = φ * μ^p := by
+  rw [tweedieProbMeasure_2nd_moment hμ hφ hp₁ hp₂, tweedieProbMeasure_expectation hμ hφ hp₁ hp₂]
+  ring
+
+/-
+`y ↦ y²` is integrable with respect to the Tweedie measure
+(the second moment is finite).
+-/
+lemma tweedieMeasure_sq_integrable {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 < φ)
+    (hp₁ : 1 < p) (hp₂ : p < 2) :
+    Integrable (fun y => y ^ 2) (tweedieMeasure μ (show (0:ℝ) ≤ φ by linarith) hp₁ hp₂) := by
+  by_contra h_contra;
+  have := tweedieMeasure_2nd_moment hμ hφ hp₁ hp₂; rw [ MeasureTheory.integral_undef h_contra ] at this; nlinarith [ Real.rpow_pos_of_pos hμ p ] ;
+
+/-- **The variance of the Tweedie distribution is `φ · μ^p`**, stated with Mathlib's
+`ProbabilityTheory.variance` (`Var[Y] = 𝔼[(Y - 𝔼[Y])²]`). -/
+theorem tweedieMeasure_variance {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 < φ)
+    (hp₁ : 1 < p) (hp₂ : p < 2) :
+    ProbabilityTheory.variance (fun y => y)
+        (tweedieMeasure μ (show (0:ℝ) ≤ φ by linarith) hp₁ hp₂) = φ * μ^p := by
+  haveI : IsProbabilityMeasure (tweedieMeasure μ (show (0:ℝ) ≤ φ by linarith) hp₁ hp₂) :=
+    tweedieMeasure_prob μ hμ hφ hp₁ hp₂
+  have hmem : MemLp (fun y => y) 2 (tweedieMeasure μ (show (0:ℝ) ≤ φ by linarith) hp₁ hp₂) := by
+    rw [MeasureTheory.memLp_two_iff_integrable_sq (by fun_prop)]
+    exact tweedieMeasure_sq_integrable hμ hφ hp₁ hp₂
+  rw [ProbabilityTheory.variance_eq_sub hmem]
+  simp only [Pi.pow_apply]
+  rw [tweedieMeasure_2nd_moment hμ hφ hp₁ hp₂, tweedieMeasure_expectation hμ hφ hp₁ hp₂]
+  ring
