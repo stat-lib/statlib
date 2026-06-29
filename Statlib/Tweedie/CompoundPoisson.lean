@@ -1,8 +1,8 @@
 import Mathlib
-import Statlib.Tweedie
-import Statlib.GammaConvolution
-import Statlib.CompoundPoissonCore
-import Statlib.TweedieAux
+import Statlib.Tweedie.Tweedie
+import Statlib.Tweedie.GammaConvolution
+import Statlib.Tweedie.CompoundPoissonCore
+import Statlib.Tweedie.TweedieAux
 open scoped BigOperators
 open scoped Real
 open scoped Classical

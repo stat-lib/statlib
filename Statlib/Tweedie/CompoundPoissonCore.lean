@@ -1,5 +1,5 @@
 import Mathlib
-import Statlib.GammaConvolution
+import Statlib.Tweedie.GammaConvolution
 
 open scoped BigOperators
 open scoped Real
