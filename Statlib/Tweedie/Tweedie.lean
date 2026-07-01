@@ -651,7 +651,11 @@ theorem tweedieMeasure_expectation {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 < φ)
         ext y; simp +decide [Real.toNNReal_of_nonneg (tweediePDF_nonneg (by linarith : 0 ≤ φ) hp₁ (by linarith))]
         exact ext_cauchy rfl
       · have h_integrable : Integrable (fun y => tweediePDF μ φ p y) volume := by
-          exact (by by_contra h; have := tweediePDF_integral hp₁ hp₂ hμ hφ; rw [MeasureTheory.integral_undef h] at this; linarith [Real.exp_pos (-μ ^ (2 - p) / (φ * (2 - p))), Real.exp_lt_one_iff.mpr (show -μ ^ (2 - p) / (φ * (2 - p)) < 0 by exact div_neg_of_neg_of_pos (neg_neg_of_pos (Real.rpow_pos_of_pos hμ _)) (mul_pos hφ (by linarith)))])
+          exact (by
+            apply MeasureTheory.Integrable.of_integral_ne_zero
+            have := tweediePDF_integral hp₁ hp₂ hμ hφ
+            linarith [Real.exp_pos (-μ ^ (2 - p) / (φ * (2 - p))),
+              Real.exp_lt_one_iff.mpr (show -μ ^ (2 - p) / (φ * (2 - p)) < 0 by exact div_neg_of_neg_of_pos (neg_neg_of_pos (Real.rpow_pos_of_pos hμ _)) (mul_pos hφ (by linarith)))])
         exact h_integrable.1.aemeasurable.real_toNNReal
     · constructor <;> norm_num [MeasureTheory.HasFiniteIntegral]
       exact measurable_id.aestronglyMeasurable
@@ -887,7 +891,10 @@ theorem tweedieMeasure_2nd_moment {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 < φ)
         ext; simp [f]; ring_nf
         exact mul_eq_mul_right_iff.mpr ( Or.inl <| by rw [ Real.toNNReal_of_nonneg <| tweediePDF_nonneg ( by linarith ) hp₁ ( by linarith ) ] ; norm_cast );
       · have h_integrable : MeasureTheory.Integrable (fun y => tweediePDF μ φ p y) volume := by
-          exact ( by by_contra h; have := tweediePDF_integral hp₁ ( by linarith ) hμ hφ; rw [ MeasureTheory.integral_undef h ] at this; linarith [ Real.exp_pos ( -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) ), Real.exp_lt_one_iff.mpr ( show -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) < 0 by exact div_neg_of_neg_of_pos ( neg_neg_of_pos ( Real.rpow_pos_of_pos hμ _ ) ) ( mul_pos hφ ( by linarith ) ) ) ] )
+          exact ( by
+            apply MeasureTheory.Integrable.of_integral_ne_zero
+            have := tweediePDF_integral hp₁ ( by linarith ) hμ hφ
+            linarith [ Real.exp_pos ( -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) ), Real.exp_lt_one_iff.mpr ( show -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) < 0 by exact div_neg_of_neg_of_pos ( neg_neg_of_pos ( Real.rpow_pos_of_pos hμ _ ) ) ( mul_pos hφ ( by linarith ) ) ) ] )
         generalize_proofs at *;
         exact h_integrable.1.aemeasurable.real_toNNReal;
     · constructor;
@@ -901,7 +908,15 @@ theorem tweedieMeasure_2nd_moment {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 < φ)
       · exact h_integrable;
       · have h_integrable : AEMeasurable (fun y => tweediePDF μ φ p y) volume := by
           have h_integrable : Integrable (fun y => tweediePDF μ φ p y) volume := by
-            exact ( by by_contra h; have := tweediePDF_integral hp₁ ( by linarith ) hμ hφ; rw [ MeasureTheory.integral_undef h ] at this; linarith [ Real.exp_pos ( -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) ), Real.exp_lt_one_iff.mpr ( show -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) < 0 by exact div_neg_of_neg_of_pos ( neg_neg_of_pos ( Real.rpow_pos_of_pos hμ _ ) ) ( mul_pos hφ ( by linarith ) ) ) ] )
+            exact ( by
+              apply MeasureTheory.Integrable.of_integral_ne_zero
+              have := tweediePDF_integral hp₁ ( by linarith ) hμ hφ
+              linarith [
+                  Real.exp_pos ( -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) ),
+                  Real.exp_lt_one_iff.mpr (
+                      show -μ ^ ( 2 - p ) / ( φ * ( 2 - p ) ) < 0 by exact div_neg_of_neg_of_pos ( neg_neg_of_pos ( Real.rpow_pos_of_pos hμ _ ) ) ( mul_pos hφ ( by linarith ) ) )
+              ]
+            )
           generalize_proofs at *; exact h_integrable.1.aemeasurable;
         generalize_proofs at *;
         exact AEMeasurable.real_toNNReal h_integrable;
@@ -929,8 +944,9 @@ theorem tweedieProbMeasure_variance {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 < φ
 lemma tweedieMeasure_sq_integrable {μ φ p : ℝ} (hμ : 0 < μ) (hφ : 0 < φ)
     (hp₁ : 1 < p) (hp₂ : p < 2) :
     Integrable (fun y => y ^ 2) (tweedieMeasure μ (show (0:ℝ) ≤ φ by linarith) hp₁ hp₂) := by
-  by_contra h_contra;
-  have := tweedieMeasure_2nd_moment hμ hφ hp₁ hp₂; rw [ MeasureTheory.integral_undef h_contra ] at this; nlinarith [ Real.rpow_pos_of_pos hμ p ] ;
+  apply MeasureTheory.Integrable.of_integral_ne_zero
+  have := tweedieMeasure_2nd_moment hμ hφ hp₁ hp₂
+  nlinarith [ Real.rpow_pos_of_pos hμ p ] ;
 
 /-- **The variance of the Tweedie distribution is `φ · μ^p`**, stated with Mathlib's
 `ProbabilityTheory.variance` (`Var[Y] = 𝔼[(Y - 𝔼[Y])²]`). -/
