@@ -27,7 +27,7 @@ argument.
 
 @[expose] public noncomputable section
 
-open MeasureTheory ProbabilityTheory Real Set Filter Classical
+open MeasureTheory ProbabilityTheory Real Set Filter
 open scoped ENNReal BigOperators Topology
 
 
@@ -40,8 +40,9 @@ density `ρ`. -/
 def μ' (θ₀ : ℝ) (ρ : ℝ → ℝ → ℝ≥0∞) : Measure ℝ := volume.withDensity (ρ θ₀)
 
 
--- Inference model corresponding to concrete case of Neyman-Pearson with 1 sample point.
-noncomputable def M (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → ℝ≥0∞)
+open Classical in
+/-- Inference model corresponding to concrete case of Neyman-Pearson with 1 sample point. -/
+noncomputable def NPmodel (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → ℝ≥0∞)
   (h : ∀ θ, Measurable (ρ θ))
   (hh : Measurable fun μ : ({μ' θ₀ ρ, μ' θ₁ ρ} : Set _) => if μ.1 = μ' θ₀ ρ then true else false) :
   @InferenceModelofMeasure (Fin 1)
@@ -57,14 +58,14 @@ noncomputable def M (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → ℝ≥0∞)
       functional := fun _ μ => ite (μ.1 = μ' θ₀ ρ) true false
       measurable_functional := fun _ => hh
       data := fun _ => id
-      measurable_data := by simp;exact measurable_id
+      measurable_data := fun _ => measurable_id
       decision_rule := fun _ => {
         toFun := fun x => ite (x ∈ RNP θ₀ θ₁ η (fun θ x => (ρ θ x).toReal))
           (Measure.dirac true) (Measure.dirac false)
         measurable' := by
           unfold RNP
-          simp;apply Measurable.ite
-          · simp
+          apply Measurable.ite
+          · simp only [ge_iff_le, sub_nonneg, mem_setOf_eq, measurableSet_setOf]
             refine Measurable.le' ?_ (h _).ennreal_toReal
             · refine Measurable.mul (by simp) (h _).ennreal_toReal
           · simp
@@ -96,20 +97,20 @@ theorem NP.intRNP₀ {θ₀ : ℝ} {R : Set ℝ} {ρ : ℝ → ℝ → ℝ}
         · simp
       tauto
     simp
-  change _ ≤ᶠ[ae volume] ρ θ₀
-  simp [EventuallyLE, Filter.Eventually, ae]
-  suffices volume (∅: Set ℝ) = 0 by
-    convert this
-    ext x
-    simp [Set.indicator]
-    split_ifs with g₀
+  · change _ ≤ᶠ[ae volume] ρ θ₀
+    simp only [EventuallyLE, Filter.Eventually, ae, Pi.mul_apply, mem_ofCountableUnion]
+    suffices volume (∅: Set ℝ) = 0 by
+      convert this
+      ext x
+      simp [Set.indicator]
+      split_ifs with g₀
+      · simp
+      · tauto
+    simp
+  · refine (lintegral_ofReal_ne_top_iff_integrable ?_ ?_).mp ?_
+    · exact aestronglyMeasurable_zero
+    · exact EventuallyLE.refl (ae volume) 0
     · simp
-    · tauto
-  simp
-  refine (lintegral_ofReal_ne_top_iff_integrable ?_ ?_).mp ?_
-  · exact aestronglyMeasurable_zero
-  · exact EventuallyLE.refl (ae volume) 0
-  · simp
   exact hI
 
 
@@ -158,16 +159,17 @@ def RNPennreal (θ₀ θ₁ : ℝ) (η : NNReal) (ρ : ℝ → ℝ → ENNReal) 
 lemma wiki_ennreal (θ₀ θ₁ : ℝ) (η : NNReal) (ρ : ℝ → ℝ → ENNReal) (R : Set ℝ) (x : ℝ) :
     ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (ρ θ₁ x) + (R.indicator 1 x) * (η * ρ θ₀ x)
     ≥ (R.indicator 1 x) * (ρ θ₁ x) + ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
-  simp [RNPennreal, Set.indicator]
+  simp only [indicator, RNPennreal, ge_iff_le, mem_setOf_eq, Pi.one_apply, ite_mul, one_mul,
+    zero_mul]
   split_ifs with g₀ g₁
-  all_goals simp
+  all_goals simp only [add_zero, zero_add, Std.le_refl]
   · apply le_of_not_ge g₁
   · tauto
 
 /-- A basic inequality from Wikipedia's proof of Neyman--Pearson. -/
 lemma wiki_ennreal' (θ₀ θ₁ : ℝ) (η : NNReal) (ρ : ℝ → ℝ → ENNReal) (R : Set ℝ) :
-    ∫⁻ x, ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (ρ θ₁ x) + (R.indicator 1 x) * (η * ρ θ₀ x)
-    ≥ ∫⁻ x, (R.indicator 1 x) * (ρ θ₁ x) + ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
+    ∫⁻ x, ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (ρ θ₁ x) + (R.indicator 1 x) * (η * ρ θ₀ x) ≥
+    ∫⁻ x, (R.indicator 1 x) * (ρ θ₁ x) + ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
   refine lintegral_mono ?_
   apply wiki_ennreal
 
@@ -175,11 +177,11 @@ lemma wiki_ennreal' (θ₀ θ₁ : ℝ) (η : NNReal) (ρ : ℝ → ℝ → ENNR
 lemma transport_ennreal {a b c d : ENNReal} (h : a + b ≤ c + d) (h₀ : d ≤ b)
     (h₂ : d ≠ ∞) : a ≤ c := by
   by_contra H
-  simp at H
+  simp only [not_le] at H
   have : c + d < a + b := ENNReal.add_lt_add_of_lt_of_le h₂ H h₀
   revert this
+  convert h
   simp
-  exact h
 
 
 /-- A basic inequality from Wikipedia's proof of Neyman--Pearson, for an `NNReal`-valued
@@ -198,8 +200,8 @@ lemma integral_in_eq_integral_ite (θ₁ : ℝ) {ρ : ℝ → ℝ → ℝ}
     (hR : MeasurableSet R) :
     ∫ (x : ℝ) in R, ρ θ₁ x = ∫ (x : ℝ), if x ∈ R then ρ θ₁ x else 0 := by
   repeat rw [← integral_indicator]
-  simp [Set.indicator]
-  exact hR
+  · simp [Set.indicator]
+  · exact hR
 
 /-- The integral of an indicator times a constant multiple. -/
 lemma integral_indicator_const_mul_eq (θ₀ η : ℝ) {ρ : ℝ → ℝ → ℝ} {R : Set ℝ} :
