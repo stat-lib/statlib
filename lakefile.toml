@@ -3,9 +3,12 @@ defaultTargets = ["Statlib"]
 version = "0.1.0"
 keywords = ["probability", "statistics", "lean"]
 packagesDir = ".lake/packages"
+lintDriver = "batteries/runLinter"
 
 [leanOptions]
 autoImplicit = true
+# Enable all mathlib linters: automatically matches what mathlib uses.
+weak.linter.mathlibStandardSet = true
 
 [[require]]
 name = "mathlib"

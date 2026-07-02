@@ -451,7 +451,8 @@ private lemma tendsto_zero {Ω E : Type*} {mΩ : MeasurableSpace Ω} [AddCommMon
         refine integral_mul_norm_le_Lp_mul_Lq Real.HolderConjugate.two_two ?_ ?_
         · simpa using Lp.memLp_sqrt_rnDeriv_sub_sqrt_rnDeriv_sub_const_mul (hs _ hθ) 2⁻¹
             (A (p.1 • h))
-        · simpa [Pi.add_def] using (memLp_sqrt_rnDeriv (P (θ + p.1 • p.2)) μ).add (memLp_sqrt_rnDeriv (P θ) μ)
+        · simpa [Pi.add_def] using (memLp_sqrt_rnDeriv (P (θ + p.1 • p.2)) μ).add
+            (memLp_sqrt_rnDeriv (P θ) μ)
       _ ≤ _ := by
         gcongr
         · exact lpNorm_nonneg
@@ -558,7 +559,8 @@ private lemma tendsto_integral_score {Ω E : Type*} {mΩ : MeasurableSpace Ω} [
       simpa [mul_assoc] using (Lp.memLp_mul_sqrt_rnDeriv (hs _ hθ) (A h)).const_mul 2⁻¹
     have hg' : MemLp (fun ω => √((P (θ + p.1 • p.2)).rnDeriv μ ω).toReal -
       √((P θ).rnDeriv μ ω).toReal) (ENNReal.ofReal 2) μ := by
-      simpa [Pi.sub_def] using (memLp_sqrt_rnDeriv (P (θ + p.1 • p.2)) μ).sub (memLp_sqrt_rnDeriv (P θ) μ)
+      simpa [Pi.sub_def] using (memLp_sqrt_rnDeriv (P (θ + p.1 • p.2)) μ).sub
+        (memLp_sqrt_rnDeriv (P θ) μ)
     calc
       ‖∫ ω, 2⁻¹ * A h ω * √((P θ).rnDeriv μ ω).toReal * (√((P (θ + p.1 • p.2)).rnDeriv μ ω).toReal +
         √((P θ).rnDeriv μ ω).toReal) ∂μ - ∫ ω, A h ω ∂P θ‖
@@ -590,7 +592,8 @@ private lemma tendsto_integral_score {Ω E : Type*} {mΩ : MeasurableSpace Ω} [
           simpa [mul_assoc] using (Lp.memLp_mul_sqrt_rnDeriv (hs _ hθ) (A h)).const_mul 2⁻¹
         have hg' : MemLp (fun ω => √((P (θ + p.1 • p.2)).rnDeriv μ ω).toReal -
             √((P θ).rnDeriv μ ω).toReal) (ENNReal.ofReal 2) μ := by
-          simpa [Pi.sub_def] using (memLp_sqrt_rnDeriv (P (θ + p.1 • p.2)) μ).sub (memLp_sqrt_rnDeriv (P θ) μ)
+          simpa [Pi.sub_def] using (memLp_sqrt_rnDeriv (P (θ + p.1 • p.2)) μ).sub
+            (memLp_sqrt_rnDeriv (P θ) μ)
         simpa using integral_mul_norm_le_Lp_mul_Lq Real.HolderConjugate.two_two hf' hg'
       _ = _:= by
         rw [lpNorm_eq_integral_norm_rpow_toReal (by simp) (by simp) hg'.aestronglyMeasurable,
