@@ -35,14 +35,15 @@ open scoped ENNReal BigOperators Topology
 def RNP (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → ℝ) : Set ℝ :=
     { x | ρ θ₁ x - η * ρ θ₀ x ≥ 0}
 
+/-- The probability measure corresponding to the parameter `θ₀` for the parametrized
+density `ρ`. -/
 def μ' (θ₀ : ℝ) (ρ : ℝ → ℝ → ℝ≥0∞) : Measure ℝ := volume.withDensity (ρ θ₀)
 
 
 -- Inference model corresponding to concrete case of Neyman-Pearson with 1 sample point.
 noncomputable def M (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → ℝ≥0∞)
   (h : ∀ θ, Measurable (ρ θ))
-  (hh : Measurable fun μ : ({μ' θ₀ ρ, μ' θ₁ ρ} : Set _) => if μ.1 = μ' θ₀ ρ then true else false)
-  :
+  (hh : Measurable fun μ : ({μ' θ₀ ρ, μ' θ₁ ρ} : Set _) => if μ.1 = μ' θ₀ ρ then true else false) :
   @InferenceModelofMeasure (Fin 1)
     (fun _ => ℝ) -- Ω
     (fun _ => Bool) -- S
@@ -73,7 +74,7 @@ noncomputable def M (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → ℝ≥0∞)
       measurable_loss_function := fun _ =>
         measurable_from_prod_countable_right fun x ⦃t⦄ a => trivial}
 
-
+/-- Multiplying by a measurable indicator preserves integrability. -/
 theorem NP.intRNP₀ {θ₀ : ℝ} {R : Set ℝ} {ρ : ℝ → ℝ → ℝ}
     (hρ : 0 ≤ ρ)
     (hI : Integrable (ρ θ₀) volume)
@@ -111,12 +112,6 @@ theorem NP.intRNP₀ {θ₀ : ℝ} {R : Set ℝ} {ρ : ℝ → ℝ → ℝ}
   · simp
   exact hI
 
-theorem NP.intRNP₁ {θ₁ : ℝ} {R : Set ℝ} {ρ : ℝ → ℝ → ℝ}
-    (hρ : 0 ≤ ρ)
-    (hI : Integrable (ρ θ₁) volume)
-    (hAE : AEStronglyMeasurable (R.indicator 1 * ρ θ₁) volume) :
-    Integrable (R.indicator 1 * ρ θ₁) volume := by
-  apply NP.intRNP₀ hρ hI hAE
 
 /-- A basic arithmetic lemma that is used in
 Wikipedia's proof of Neyman--Pearson. -/
@@ -134,54 +129,51 @@ lemma wiki_arith {η α : ℝ} (hηp : 0 ≤ η)
 /-- The basic inequality that gets Wikipedia's proof of N--P
 off the ground. -/
 lemma wiki (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → ℝ) (R : Set ℝ) (x : ℝ) :
-  ((RNP θ₀ θ₁ η ρ).indicator 1 x - R.indicator 1 x) * (ρ θ₁ x - η * ρ θ₀ x) ≥ 0 := by
-    simp only [indicator, RNP, ge_iff_le, sub_nonneg, mem_setOf_eq, Pi.one_apply]
-    split_ifs with g₀ g₁
-    · simp
-    · simp only [sub_zero, one_mul, sub_nonneg]
-      exact g₀
-    · linarith
-    · simp
+    ((RNP θ₀ θ₁ η ρ).indicator 1 x - R.indicator 1 x) * (ρ θ₁ x - η * ρ θ₀ x) ≥ 0 := by
+  simp only [indicator, RNP, ge_iff_le, sub_nonneg, mem_setOf_eq, Pi.one_apply]
+  split_ifs with g₀ g₁
+  · simp
+  · simp only [sub_zero, one_mul, sub_nonneg]
+    exact g₀
+  · linarith
+  · simp
 
 /-- Like `wiki` but avoid subtraction. -/
 lemma wiki_nonneg (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → ℝ) (R : Set ℝ) (x : ℝ) :
     ((RNP θ₀ θ₁ η ρ).indicator 1 x) * (ρ θ₁ x) + (R.indicator 1 x) * (η * ρ θ₀ x)
-  ≥ (R.indicator 1 x) * (ρ θ₁ x) + ((RNP θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
-    simp only [indicator, RNP, ge_iff_le, sub_nonneg, mem_setOf_eq, Pi.one_apply]
-    split_ifs with g₀ g₁
-    · simp
-    · simp
-      linarith
-    · linarith
-    · simp
+    ≥ (R.indicator 1 x) * (ρ θ₁ x) + ((RNP θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
+  simp only [indicator, RNP, ge_iff_le, sub_nonneg, mem_setOf_eq, Pi.one_apply]
+  split_ifs
+  all_goals simp; try linarith
 
+/-- Neyman--Pearson rejection region, for an `NNReal`-valued density `ρ`. -/
 def RNPnnreal (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → NNReal) : Set ℝ :=
     { x | ρ θ₁ x ≥ η * ρ θ₀ x}
 
+/-- Neyman--Pearson rejection region, for an `ENNReal`-valued density `ρ`. -/
 def RNPennreal (θ₀ θ₁ : ℝ) (η : NNReal) (ρ : ℝ → ℝ → ENNReal) : Set ℝ :=
     { x | ρ θ₁ x ≥ η * ρ θ₀ x}
 
 /-- The basic inequality from Wikipedia holds over `ℝ≥0∞`. -/
 lemma wiki_ennreal (θ₀ θ₁ : ℝ) (η : NNReal) (ρ : ℝ → ℝ → ENNReal) (R : Set ℝ) (x : ℝ) :
     ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (ρ θ₁ x) + (R.indicator 1 x) * (η * ρ θ₀ x)
-  ≥ (R.indicator 1 x) * (ρ θ₁ x) + ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
-    simp [RNPennreal, Set.indicator]
-    split_ifs with g₀ g₁
-    · simp
-    · simp
-      apply le_of_not_ge g₁
-    · simp;tauto
-    · simp
+    ≥ (R.indicator 1 x) * (ρ θ₁ x) + ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
+  simp [RNPennreal, Set.indicator]
+  split_ifs with g₀ g₁
+  all_goals simp
+  · apply le_of_not_ge g₁
+  · tauto
 
+/-- A basic inequality from Wikipedia's proof of Neyman--Pearson. -/
 lemma wiki_ennreal' (θ₀ θ₁ : ℝ) (η : NNReal) (ρ : ℝ → ℝ → ENNReal) (R : Set ℝ) :
     ∫⁻ x, ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (ρ θ₁ x) + (R.indicator 1 x) * (η * ρ θ₀ x)
-  ≥ ∫⁻ x, (R.indicator 1 x) * (ρ θ₁ x) + ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
-    refine lintegral_mono ?_
-    apply wiki_ennreal
+    ≥ ∫⁻ x, (R.indicator 1 x) * (ρ θ₁ x) + ((RNPennreal θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
+  refine lintegral_mono ?_
+  apply wiki_ennreal
 
 /-- This will allow us to transport the Wiki argument to `ℝ≥0∞`. -/
 lemma transport_ennreal {a b c d : ENNReal} (h : a + b ≤ c + d) (h₀ : d ≤ b)
-  (h₂ : d ≠ ∞) : a ≤ c := by
+    (h₂ : d ≠ ∞) : a ≤ c := by
   by_contra H
   simp at H
   have : c + d < a + b := ENNReal.add_lt_add_of_lt_of_le h₂ H h₀
@@ -190,39 +182,35 @@ lemma transport_ennreal {a b c d : ENNReal} (h : a + b ≤ c + d) (h₀ : d ≤ 
   exact h
 
 
-
+/-- A basic inequality from Wikipedia's proof of Neyman--Pearson, for an `NNReal`-valued
+density `ρ`. -/
 lemma wiki_nnreal (θ₀ θ₁ η : ℝ) (ρ : ℝ → ℝ → NNReal) (R : Set ℝ) (x : ℝ) :
-    ((RNPnnreal θ₀ θ₁ η ρ).indicator 1 x) * (ρ θ₁ x) + (R.indicator 1 x) * (η * ρ θ₀ x)
-  ≥ (R.indicator 1 x) * (ρ θ₁ x) + ((RNPnnreal θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
-    simp only [indicator, RNPnnreal, ge_iff_le, mem_setOf_eq, Pi.one_apply]
-    split_ifs with g₀ g₁
-    · simp
-    · simp
-      linarith
-    · simp;tauto
-    · simp
+    ((RNPnnreal θ₀ θ₁ η ρ).indicator 1 x) * (ρ θ₁ x) + (R.indicator 1 x) * (η * ρ θ₀ x) ≥
+    (R.indicator 1 x) * (ρ θ₁ x) + ((RNPnnreal θ₀ θ₁ η ρ).indicator 1 x) * (η * ρ θ₀ x) := by
+  simp only [indicator, RNPnnreal, ge_iff_le, mem_setOf_eq, Pi.one_apply]
+  split_ifs; all_goals simp; try linarith
 
 open Classical in
-lemma int_help (θ₁ : ℝ) {ρ : ℝ → ℝ → ℝ}
-  {R : Set ℝ}
-  (hR : MeasurableSet R) :
-  ∫ (x : ℝ) in R, ρ θ₁ x = ∫ (x : ℝ), if x ∈ R then ρ θ₁ x else 0 := by
-        repeat rw [← integral_indicator]
-        simp [Set.indicator]
-        exact hR
+/-- The integral over a region `R` equals the corresponding
+if-then-else integral. -/
+lemma integral_in_eq_integral_ite (θ₁ : ℝ) {ρ : ℝ → ℝ → ℝ}
+    {R : Set ℝ}
+    (hR : MeasurableSet R) :
+    ∫ (x : ℝ) in R, ρ θ₁ x = ∫ (x : ℝ), if x ∈ R then ρ θ₁ x else 0 := by
+  repeat rw [← integral_indicator]
+  simp [Set.indicator]
+  exact hR
 
-lemma int_help' (θ₀ η : ℝ) {ρ : ℝ → ℝ → ℝ} {R : Set ℝ} :
-  ∫ (a : ℝ), R.indicator 1 a * η * ρ θ₀ a
-  = η * ∫ (a : ℝ), R.indicator 1 a * ρ θ₀ a := by
-    rw [← integral_const_mul]
-    congr
-    ext a
-    ring_nf
+/-- The integral of an indicator times a constant multiple. -/
+lemma integral_indicator_const_mul_eq (θ₀ η : ℝ) {ρ : ℝ → ℝ → ℝ} {R : Set ℝ} :
+    ∫ (a : ℝ), R.indicator 1 a * η * ρ θ₀ a
+    = η * ∫ (a : ℝ), R.indicator 1 a * ρ θ₀ a := by
+  rw [← integral_const_mul]
+  congr
+  ext a
+  ring_nf
 
-/--
-May 2, 2026.
-The Neyman-Pearson lemma.
--/
+/-- The Neyman-Pearson lemma. -/
 lemma NP (θ₀ θ₁ η α : ℝ) (hηp : 0 ≤ η)
     {ρ : ℝ → ℝ → ℝ} (hρ : 0 ≤ ρ)
     (hmm : ∀ θ, Measurable (ρ θ))
@@ -259,17 +247,17 @@ lemma NP (θ₀ θ₁ η α : ℝ) (hηp : 0 ≤ η)
     apply NP.intRNP₀ hρ (hI _) <| h₀.mul (hI _).aestronglyMeasurable
   rw [integral_add] at hi
   · repeat rw [integral_sub] at hi
-    · repeat rw [int_help'] at hi
+    · repeat rw [integral_indicator_const_mul_eq] at hi
       rw [← integral_indicator] at hα
       · simp only [indicator, Pi.one_apply, ite_mul, one_mul, zero_mul, ge_iff_le] at hα hi
         rw [hα] at hi
-        repeat rw [← int_help] at hi
+        repeat rw [← integral_in_eq_integral_ite] at hi
         · exact wiki_arith hηp hα' hi
         · exact hR
         · exact hR
         · exact hm
       exact hm
-    · apply NP.intRNP₁ hρ (hI _) <| hAE _
+    · apply NP.intRNP₀ hρ (hI _) <| hAE _
     · rw [lem]
       simp_rw [mul_assoc]
       apply MeasureTheory.Integrable.const_mul'
@@ -279,16 +267,16 @@ lemma NP (θ₀ θ₁ η α : ℝ) (hηp : 0 ≤ η)
         rw [lem]
         simp_rw [mul_assoc]
         apply MeasureTheory.Integrable.const_mul'
-        exact NP.intRNP₁ hρ (hI _) <| hAE _
+        exact NP.intRNP₀ hρ (hI _) (hAE _)
       · exact hI₁'
     · exact hI₀'
   · repeat apply Integrable.sub
-    · exact NP.intRNP₁ hρ (hI _) <| hAE _
+    · exact NP.intRNP₀ hρ (hI _) <| hAE _
     · rw [lem]
       simp_rw [mul_assoc]
       apply MeasureTheory.Integrable.const_mul'
-        <| NP.intRNP₁ hρ (hI _) <| hAE _
-    · exact NP.intRNP₁ hρ (hI _) <| hAER _
+        <| NP.intRNP₀ hρ (hI _) <| hAE _
+    · exact NP.intRNP₀ hρ (hI _) <| hAER _
   · rw [lem]
     simp_rw [mul_assoc]
     apply MeasureTheory.Integrable.const_mul' hI''
