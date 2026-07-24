@@ -13,7 +13,7 @@ weak.linter.mathlibStandardSet = true
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4"
-rev = "79d0395a1825a6264ad5d269e35e60537518955e"
+rev = "6c5a9081e9b704f0d366214e1fd5e68e1538a4b2"
 
 [[require]]
 name = "subverso"
