@@ -1,4 +1,7 @@
-[["defsWithUnderscore", "InferenceModelofKernel.decision_rule"],
+[["defsWithUnderscore", "instENormEReal_statlib"],
+ ["defsWithUnderscore", "instSMulENNRealEReal_statlib"],
+ ["defsWithUnderscore", "instSMulNNRealEReal_statlib"],
+ ["defsWithUnderscore", "InferenceModelofKernel.decision_rule"],
  ["defsWithUnderscore", "InferenceModelofKernel.loss_function"],
  ["defsWithUnderscore", "InferenceModelofKernel.of_InferenceModelofMeasure"],
  ["defsWithUnderscore", "InferenceModelofMeasure.decision_rule"],
