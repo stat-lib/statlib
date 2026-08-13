@@ -6,8 +6,9 @@ Authors: Rémy Degenne, Gaëtan Serré
 
 module
 
-public import Statlib.EValues.Utility
+public import Mathlib.Analysis.Convex.Basic
 public import Statlib.ForMathlib.ENNReal
+public import Statlib.ForMathlib.EReal
 public import Statlib.ForMathlib.MeasureTheory.Integral.EReal.Kernel
 
 /-!

@@ -1,5 +1,6 @@
 import Statlib.EValues.EVariable
-import Statlib.EValues.Utility
+import Statlib.EValues.Utility.Basic
+import Statlib.EValues.Utility.Log
 import Statlib.ForMathlib.Algebra.Order.Group.PosPart
 import Statlib.ForMathlib.Convex
 import Statlib.ForMathlib.ENNReal
