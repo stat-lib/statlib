@@ -13,8 +13,7 @@ public import Statlib.ForMathlib.MeasureTheory.Integral.EReal.Kernel
 /-!
 # E-variables
 
-This file defines e-variables and randomized e-variables, which are fundamental objects in
-e-value theory.
+This file defines e-variables and randomized e-variables.
 
 ## Main definitions
 
@@ -22,18 +21,16 @@ e-value theory.
   expected value at most 1 under all measures in `S`.
 * `IsRandEVar κ S`: A kernel `κ` is a randomized e-variable for `S` if its mean function is
   an e-variable.
-* `NeBotUtilityEVar X P S U`: An e-variable `X` for which the composed utility integral is
-  not `⊥`.
 
 ## Main statements
 
 * `isRandEVar_iff_isEVar`: A kernel is a randomized e-variable iff its mean function is an
   e-variable.
 * `convex_isEVar`: The set of e-variables is convex.
-* `IsEVar.mono`: Monotonicity: if `Y` is an e-variable and `X ≤ Y`, then `X` is also an
-  e-variable.
-* `IsRandEVar.mono`: Monotonicity for randomized e-variables: if `η` is a randomized e-variable
-  and `κ ≤ η`, then `κ` is also a randomized e-variable.
+* `isEVar_liminf`: The limit inferior of a sequence of e-variables is an e-variable.
+* `IsEVar.comp`: The composition of an e-variable with a measurable function is an e-variable.
+* `IsRandEVar.comp`: The composition of a randomized e-variable with a transition kernel is
+  a randomized e-variable.
 
 -/
 
@@ -302,43 +299,6 @@ lemma isEVar_union_iff : IsEVar X (S ∪ T) ↔ IsEVar X S ∧ IsEVar X T := by
     ⟨h.measurable, fun μ hμ ↦ h.eintegral_ne_bot _ (Set.subset_union_right hμ),
       fun μ hμ ↦ h.eintegral_nonpos _ (Set.subset_union_right hμ)⟩⟩
 
-lemma IsEVar.comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 → 𝓨}
-    (hφ : Measurable φ) (h : IsEVar Y {μ.map φ | μ ∈ S}) :
-    IsEVar (Y ∘ φ) S where
-  measurable := h.measurable.comp hφ
-  eintegral_ne_bot μ hμ := by
-    have h' := h.eintegral_ne_bot (μ.map φ) ⟨μ, hμ, rfl⟩
-    have h_meas := h.measurable
-    rwa [eintegral_map (by fun_prop) hφ] at h'
-  eintegral_nonpos μ hμ := by
-    have h' := h.eintegral_nonpos (μ.map φ) ⟨μ, hμ, rfl⟩
-    have h_meas := h.measurable
-    rwa [eintegral_map (by fun_prop) hφ] at h'
-
-lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
-    {κ : Kernel 𝓧 𝓨} [IsMarkovKernel κ] (h : IsRandEVar ξ {κ ∘ₘ μ | μ ∈ S}) :
-    IsRandEVar (ξ ∘ₖ κ) S where
-  markov := have := h.markov; inferInstance
-  eintegral_ne_bot μ hμ := by
-    have h' := h.eintegral_ne_bot (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
-    rw [eintegral_comp_measure (by fun_prop)] at h'
-    swap; · exact eintegrable_of_eintegral_ne_bot (h.eintegral_ne_bot _ ⟨μ, hμ, rfl⟩)
-    convert h' with ω
-    rw [eintegral_sub_one_eq_lintegral_sub (by fun_prop)]
-    simp only [measure_univ, EReal.coe_ennreal_one, Kernel.comp_apply]
-    rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
-  eintegral_nonpos μ hμ := by
-    have h' := h.eintegral_nonpos (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
-    rw [eintegral_comp_measure (by fun_prop)] at h'
-    swap; · exact eintegrable_of_eintegral_ne_bot (h.eintegral_ne_bot _ ⟨μ, hμ, rfl⟩)
-    refine le_trans ?_ h'
-    gcongr
-    intro ω
-    simp only
-    rw [eintegral_sub_one_eq_lintegral_sub (by fun_prop)]
-    simp only [measure_univ, EReal.coe_ennreal_one, Kernel.comp_apply]
-    rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
-
 /-- The set of e-variables is convex. -/
 lemma convex_isEVar (S : Set (Measure 𝓧)) : Convex ℝ≥0∞ {Z | IsEVar Z S} := by
   intro X hX Y hY a b ha hb hab
@@ -406,28 +366,57 @@ lemma convex_isEVar (S : Set (Measure 𝓧)) : Convex ℝ≥0∞ {Z | IsEVar Z S
       norm_cast
       exact .inl ⟨hb, hY.eintegral_nonpos μ hμ⟩
 
-/-- An e-variable for which the eintegral of the composition with a utility function is not `⊥`. -/
-structure NeBotUtilityEVar (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧)
-    (S : Set (Measure 𝓧)) (U : Utility) : Prop extends IsEVar X S where
-  utility_ne_bot : ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥
-
-lemma NeBotUtilityEVar.eintegrable (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧) (S : Set (Measure 𝓧))
-    (U : Utility) (hX : NeBotUtilityEVar X P S U) : EIntegrable (U ∘ X) P :=
-  eintegrable_of_eintegral_ne_bot hX.utility_ne_bot
-
-lemma IsEVar.neBotUtilityEVar_iff (hX : IsEVar X S) {P : Measure 𝓧} {U : Utility} :
-    NeBotUtilityEVar X P S U ↔ ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥ :=
-  ⟨fun h ↦ h.utility_ne_bot, fun h_eintegrable ↦ ⟨hX, h_eintegrable⟩⟩
-
 open Filter in
-lemma isEVar_liminf {X : ℕ → 𝓧 → ℝ≥0∞} (hX : ∀ n, (IsEVar (X n) S))
-    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) : IsEVar (fun ω ↦ liminf (fun n ↦ X n ω) atTop) S := by
+/-- The limit inferior of a sequence of e-variables is an e-variable. -/
+lemma isEVar_liminf {X : ℕ → 𝓧 → ℝ≥0∞} (hX : ∀ n, IsEVar (X n) S)
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    IsEVar (fun ω ↦ liminf (X · ω) atTop) S := by
   refine IsEVar.of_lintegral_le_measure_univ hS ?_ fun μ hμ ↦ ?_
   · exact Measurable.liminf fun n ↦ (hX n).measurable
-  · calc ∫⁻ ω, (fun ω ↦ liminf (fun n ↦ X n ω) atTop) ω ∂μ
+  · calc ∫⁻ ω, (fun ω ↦ liminf (X · ω) atTop) ω ∂μ
     _ ≤ liminf (fun n ↦ ∫⁻ ω, X n ω ∂μ) atTop := lintegral_liminf_le fun n ↦ (hX n).measurable
     _ ≤ μ .univ := by
       refine liminf_le_of_frequently_le ?_
       exact .of_forall fun n ↦ (hX n).lintegral_le_measure_univ μ hμ
+
+/-- The composition of an e-variable with a measurable function is an e-variable. -/
+lemma IsEVar.comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 → 𝓨}
+    (hφ : Measurable φ) (h : IsEVar Y {μ.map φ | μ ∈ S}) :
+    IsEVar (Y ∘ φ) S where
+  measurable := h.measurable.comp hφ
+  eintegral_ne_bot μ hμ := by
+    have h' := h.eintegral_ne_bot (μ.map φ) ⟨μ, hμ, rfl⟩
+    have h_meas := h.measurable
+    rwa [eintegral_map (by fun_prop) hφ] at h'
+  eintegral_nonpos μ hμ := by
+    have h' := h.eintegral_nonpos (μ.map φ) ⟨μ, hμ, rfl⟩
+    have h_meas := h.measurable
+    rwa [eintegral_map (by fun_prop) hφ] at h'
+
+/-- The composition of a randomized e-variable with a transition kernel is
+a randomized e-variable. -/
+lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
+    {κ : Kernel 𝓧 𝓨} [IsMarkovKernel κ] (h : IsRandEVar ξ {κ ∘ₘ μ | μ ∈ S}) :
+    IsRandEVar (ξ ∘ₖ κ) S where
+  markov := have := h.markov; inferInstance
+  eintegral_ne_bot μ hμ := by
+    have h' := h.eintegral_ne_bot (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
+    rw [eintegral_comp_measure (by fun_prop)] at h'
+    swap; · exact eintegrable_of_eintegral_ne_bot (h.eintegral_ne_bot _ ⟨μ, hμ, rfl⟩)
+    convert h' with ω
+    rw [eintegral_sub_one_eq_lintegral_sub (by fun_prop)]
+    simp only [measure_univ, EReal.coe_ennreal_one, Kernel.comp_apply]
+    rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
+  eintegral_nonpos μ hμ := by
+    have h' := h.eintegral_nonpos (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
+    rw [eintegral_comp_measure (by fun_prop)] at h'
+    swap; · exact eintegrable_of_eintegral_ne_bot (h.eintegral_ne_bot _ ⟨μ, hμ, rfl⟩)
+    refine le_trans ?_ h'
+    gcongr
+    intro ω
+    simp only
+    rw [eintegral_sub_one_eq_lintegral_sub (by fun_prop)]
+    simp only [measure_univ, EReal.coe_ennreal_one, Kernel.comp_apply]
+    rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
 
 end ProbabilityTheory
