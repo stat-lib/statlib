@@ -6,11 +6,11 @@ Authors: Rémy Degenne, Gaëtan Serré
 
 module
 
+public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 public import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
-public import Mathlib.Data.Real.StarOrdered
 public import Mathlib.Order.CompletePartialOrder
-public import Statlib.ForMathlib.EIntegral
+public import Statlib.ForMathlib.MeasureTheory.Integral.EReal.EIntegral
 public import Statlib.ForMathlib.ENNReal
 public import Statlib.ForMathlib.Convex
 
@@ -137,6 +137,7 @@ lemma Utility.monotoneOn_Ici_real (U : Utility) (hU0 : U 0 ≠ ⊥) :
     · exact U.ne_bot (by simp [lt_of_le_of_ne (Set.mem_Ici.mp hx) (Ne.symm hx0)])
   · exact U.ne_top (by simp)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The utility function is concave on `(0, ∞)` when viewed as a real-valued function. -/
 lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.real := by
   refine ⟨convex_Ioi 0, ?_⟩
@@ -146,6 +147,7 @@ lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.rea
   simp only [smul_eq_mul]
   have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
     (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; exact hab)
+  rw [EReal.smul_nnreal_eq_mul] at h_ccv
   simp only [EReal.smul_nnreal_eq_mul, ENNReal.smul_def, smul_eq_mul] at h_ccv
   have h_mul (x a : ℝ) (ha : 0 ≤ a) :
       (ENNReal.ofNNReal (⟨a, ha⟩ : ℝ≥0)) * ENNReal.ofReal x = ENNReal.ofReal (a * x) := by
@@ -168,6 +170,7 @@ lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.rea
   rwa [ENNReal.toReal_ofReal (by positivity), ENNReal.toReal_ofReal (by positivity),
     ENNReal.toReal_ofReal (by positivity)] at h_ccv
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The utility function is concave on `[0, ∞)` when viewed as a real-valued function. -/
 lemma Utility.concaveOn_Ici_real (U : Utility) (h0 : U 0 ≠ ⊥) : ConcaveOn ℝ (Set.Ici 0) U.real := by
   refine ⟨convex_Ici 0, ?_⟩
@@ -681,7 +684,7 @@ theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
     eintegral_mono_ae h_ccv
   _ = U (∫⁻ y, X y ∂μ) := by
     have h_int_eq : ∫ᵉ x, U.deriv (∫⁻ y, X y ∂μ) * (X x - ∫⁻ y, X y ∂μ) ∂μ = 0 := by
-      rw [eintegral_mul_const, eintegral_sub']
+      rw [eintegral_const_mul, eintegral_sub']
       rotate_left
       · fun_prop
       · fun_prop
@@ -1012,8 +1015,10 @@ lemma deriv_boundedLogUtility_real {N : ℝ} (hN : 0 < N) {x : ℝ} (hx : 0 < x)
       =ᶠ[𝓝 x] fun y ↦ Real.log y + Real.log N - Real.log (y + N) := by
     filter_upwards [eventually_gt_nhds hx] with y hy using boundedLogUtility_real hN hy
   have hlog2 : HasDerivAt (fun y : ℝ ↦ Real.log (y + N)) ((x + N)⁻¹) x := by
-    simpa using (Real.hasDerivAt_log (x := x + N) (by positivity)).comp x
+    have h := (Real.hasDerivAt_log (x := x + N) (by positivity)).comp x
       ((hasDerivAt_id x).add_const N)
+    simp at h
+    simpa
   have h1 : HasDerivAt (fun y : ℝ ↦ Real.log y + Real.log N - Real.log (y + N))
       (x⁻¹ - (x + N)⁻¹) x := ((Real.hasDerivAt_log hx.ne').add_const (Real.log N)).sub hlog2
   rw [h_ev.deriv_eq, h1.deriv]

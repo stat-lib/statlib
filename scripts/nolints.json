@@ -6,8 +6,6 @@
  ["defsWithUnderscore", "InferenceModelofKernel.of_InferenceModelofMeasure"],
  ["defsWithUnderscore", "InferenceModelofMeasure.decision_rule"],
  ["defsWithUnderscore", "InferenceModelofMeasure.loss_function"],
- ["defsWithUnderscore", "MeasureTheory.instNegPartForallEReal_statlib"],
- ["defsWithUnderscore", "MeasureTheory.instPosPartForallEReal_statlib"],
  ["defsWithUnderscore",
   "ProbabilityTheory.Kernel.inv_rangeFactorization_of_measure"],
  ["defsWithUnderscore",

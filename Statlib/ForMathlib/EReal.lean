@@ -8,6 +8,7 @@ module
 
 public import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
 public import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
+public import Statlib.ForMathlib.MeasureTheory.Integral.EReal.AuxLemmas
 
 /-! # Lemmas about EReal
 -/
@@ -139,33 +140,6 @@ lemma EReal.inv_coe_ennreal {x : ℝ≥0∞} (hx : x ≠ 0) :
   simp only [EReal.coe_ennreal_ofReal, inv_nonneg, ENNReal.toReal_nonneg, sup_of_le_left]
   rw [EReal.coe_inv]
 
-lemma EReal.mul_sub_of_nonneg_of_ne_top {a b c : EReal} (ha : 0 ≤ a) (ha' : a ≠ ⊤) :
-    a * (b - c) = a * b - a * c := by
-  by_cases ha_zero : a = 0
-  · simp [ha_zero]
-  have ha_pos : 0 < a := lt_of_le_of_ne ha (Ne.symm ha_zero)
-  have ha_ne_bot : a ≠ ⊥ := fun h_eq ↦ by simp [h_eq] at ha
-  lift a to ℝ using ⟨ha', ha_ne_bot⟩
-  cases b <;> cases c
-  · simp [EReal.mul_bot_of_pos ha_pos]
-  · simp [EReal.mul_bot_of_pos ha_pos]
-  · simp [EReal.mul_bot_of_pos ha_pos]
-  · simp only [ne_eq, EReal.coe_ne_bot, not_false_eq_true, EReal.sub_bot,
-      EReal.mul_top_of_pos ha_pos, EReal.mul_bot_of_pos ha_pos]
-    rw [EReal.sub_bot]
-    rw [← EReal.coe_mul]
-    exact EReal.coe_ne_bot _
-  · norm_cast
-    ring
-  · simp [EReal.mul_bot_of_pos ha_pos, EReal.mul_top_of_pos ha_pos]
-  · simp [EReal.mul_top_of_pos ha_pos, EReal.mul_bot_of_pos ha_pos]
-  · simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.top_sub,
-      EReal.mul_top_of_pos ha_pos]
-    rw [EReal.top_sub]
-    rw [← EReal.coe_mul]
-    exact EReal.coe_ne_top _
-  · simp [EReal.mul_bot_of_pos ha_pos, EReal.mul_top_of_pos ha_pos]
-
 lemma EReal.add_sub_add (a b : EReal) {c d : EReal} (hc : c ≠ ⊥) (hd : d ≠ ⊥) :
     a + b - (c + d) = (a - c) + (b - d) := by
   cases a <;> cases b <;> cases c <;> cases d
@@ -262,24 +236,9 @@ lemma EReal.sub_eq_bot {a b : EReal} : a - b = ⊥ ↔ a = ⊥ ∨ b = ⊤ := by
   norm_cast
   simp [-coe_sub]
 
-lemma EReal.add_sub_add_comm {a b c d : EReal} (h1 : c ≠ ⊥ ∨ d ≠ ⊤) (h2 : c ≠ ⊤ ∨ d ≠ ⊥) :
-    (a + b) - (c + d) = (a - c) + (b - d) := by
-  rw [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg, EReal.neg_add h1 h2, sub_eq_add_neg]
-  grind
-
 lemma EReal.coe_ennreal_sub_toENNReal (a b : ℝ≥0∞) :
     ((a : EReal) - (b : EReal)).toENNReal = a - b := by
   cases a <;> cases b <;> aesop
-
-lemma EReal.neg_coe_ennreal_sub_toENNReal {a b : ℝ≥0∞} (h : a ≠ ∞ ∨ b ≠ ∞) :
-    (-((a : EReal) - (b : EReal))).toENNReal = b - a := by
-  by_contra h_contra;
-  rcases a with ( _ | a ) <;> rcases b with ( _ | b ) <;> norm_cast at *;
-  · aesop;
-  · refine h_contra ?_;
-    convert EReal.coe_ennreal_sub_toENNReal _ _ using 1;
-    congr! 1;
-    exact EReal.coe_eq_coe_iff.mpr (by norm_num)
 
 lemma EReal.ne_top_exists_finite_iff {a : EReal} : a ≠ ⊤ ↔ ∃ b, b ≠ ⊤ ∧ a ≤ b := by
   constructor

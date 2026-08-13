@@ -8,6 +8,7 @@ module
 
 public import Statlib.EValues.Utility
 public import Statlib.ForMathlib.ENNReal
+public import Statlib.ForMathlib.MeasureTheory.Integral.EReal.Kernel
 
 /-!
 # E-variables
@@ -341,7 +342,7 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
 /-- The set of e-variables is convex. -/
 lemma convex_isEVar (S : Set (Measure 𝓧)) : Convex ℝ≥0∞ {Z | IsEVar Z S} := by
   intro X hX Y hY a b ha hb hab
-  simp only [Set.mem_setOf_eq]
+  simp only [Set.mem_ofPred_eq]
   have := hX.measurable
   have := hY.measurable
   have ha_top' : a ≠ ⊤ := by
@@ -375,18 +376,18 @@ lemma convex_isEVar (S : Set (Measure 𝓧)) : Convex ℝ≥0∞ {Z | IsEVar Z S
       · exact (hX.eintegrable_sub_one μ hμ).const_mul (by simp) ha_top
       · exact (hY.eintegrable_sub_one μ hμ).const_mul (by simp) hb_top
       · left
-        rw [eintegral_mul_const (by simp) ha_top]
+        rw [eintegral_const_mul (by simp) ha_top]
         · rw [ne_eq, EReal.mul_eq_bot]
           have : ¬ (a : EReal) < 0 := by norm_cast; simp
           simp [hX.eintegral_ne_bot μ hμ, ha_top, this]
         · exact hX.eintegrable_sub_one μ hμ
       · right
-        rw [eintegral_mul_const (by simp) hb_top]
+        rw [eintegral_const_mul (by simp) hb_top]
         · rw [ne_eq, EReal.mul_eq_bot]
           have : ¬ (b : EReal) < 0 := by norm_cast; simp
           simp [hY.eintegral_ne_bot μ hμ, hb_top, this]
         · exact hY.eintegrable_sub_one μ hμ
-      rw [eintegral_mul_const (by simp) ha_top, eintegral_mul_const (by simp) hb_top]
+      rw [eintegral_const_mul (by simp) ha_top, eintegral_const_mul (by simp) hb_top]
       · exact hY.eintegrable_sub_one μ hμ
       · exact hX.eintegrable_sub_one μ hμ
   refine ⟨by fun_prop, fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩
