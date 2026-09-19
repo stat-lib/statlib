@@ -1,4 +1,5 @@
 import Statlib.Causal.PotentialResponse
+import Statlib.Causal.PotentialResponse.Contrast
 import Statlib.EValues.DPI
 import Statlib.EValues.EVariable
 import Statlib.EValues.Utility.Basic
