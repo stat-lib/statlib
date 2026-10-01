@@ -475,7 +475,7 @@ section TendstoIntegralScore
 /-- The unscaled Hadamard QMD remainder tends to zero along any admissible local path. -/
 private lemma unscaled_remainder_tendsto_zero {Ω E : Type*} {mΩ : MeasurableSpace Ω}
     [AddCommMonoid E] [Module ℝ E] [TopologicalSpace E] {P : E → Measure Ω} {μ : Measure Ω}
-    [SigmaFinite μ] {s : Set E} {θ h : E} {A : E →ₗ[ℝ] (Ω →₂[P θ] ℝ)}
+    {s : Set E} {θ h : E} {A : E →ₗ[ℝ] (Ω →₂[P θ] ℝ)}
     (hA : HasHadamardQuadraticMeanDerivWithinAt P μ s θ A) {l : Filter (ℝ × E)}
     (hzero : Tendsto Prod.fst l (𝓝[≠] 0)) (hh : Tendsto Prod.snd l (𝓝 h))
     (he : ∀ᶠ p in l, θ + p.1 • p.2 ∈ s) :
@@ -489,7 +489,7 @@ private lemma unscaled_remainder_tendsto_zero {Ω E : Type*} {mΩ : MeasurableSp
 
 /-- This is similar to `score_tendsto_zero`. -/
 private lemma score_tendsto_zero' {Ω E : Type*} {mΩ : MeasurableSpace Ω} [AddCommMonoid E]
-    [Module ℝ E] [TopologicalSpace E] {P : E → Measure Ω} {μ : Measure Ω} [SigmaFinite μ]
+    [Module ℝ E] {P : E → Measure Ω} {μ : Measure Ω} [SigmaFinite μ]
     {s : Set E} {θ : E} (h : E) (A : E →ₗ[ℝ] (Ω →₂[P θ] ℝ)) (hθ : θ ∈ s)
     (hprob : ∀ x ∈ s, IsProbabilityMeasure (P x)) (hs : ∀ x ∈ s, P x ≪ μ) {l : Filter (ℝ × E)}
     (hzero : Tendsto Prod.fst l (𝓝 0)) :
