@@ -1,7 +1,10 @@
-Proposed roadmap structure:
+# Proposed design document template
 
+This is a reference checklist, not a required format. Use the sections that are helpful for the
+project you want to propose, and discuss the design itself in a GitHub issue before beginning a
+large implementation.
 
-# Roadmap: topic
+# Project: topic
 ## 1. Goal
 What is your goal? Why is it important?
 
@@ -38,4 +41,5 @@ Project/Area/Basic.lean
 Project/Area/Operations.lean
 Project/Area/MainTheorem.lean
 ``` 
-Any comments are welcome! This is just a proposed design doc — the goal is to reduce communication overhead and serve as a reference for anyone joining the project later.
+The goal is to make important design choices explicit, reduce communication overhead, and leave a
+useful record for contributors who join the project later.
