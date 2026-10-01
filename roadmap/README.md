@@ -1,35 +1,35 @@
-Proposed road map structure:
+Proposed roadmap structure:
 
 
 # Roadmap: topic
-## 1. Goal: eventually, what is your goal? Why is it important?
+## 1. Goal
+What is your goal? Why is it important?
 
-## 2. Completion criterion: 
-what is the theorem you are viewing as a milestone? 
-Note the theorem could be big and could be small.
+## 2. Completion criteria
+Which theorem (big or small) marks this roadmap as done?
 
 ## 3. Scope
-list the things inside this design doc 
-## 4. Out of scope
-what will not be covered
-## 5. Mathematical model
+What definitions and results will you formalize?
 
-what is the realtionship between math informally and the thing formally you wanna build
+## 4. Out of scope
+What related topics will you leave out, and why?
+
+## 5. Mathematical model
+What informal math (paper or textbook) are you formalizing, and how does your Lean version differ from it?
 
 ## 6. Design decisions and conventions
-Lets fix some design choices, choose the choice related to you goal
-- carrier types: what is the type of the object you wanna study
-- namespace
-- parameter order: what are the orders of the object you wanna approach
-- totalization/boundary behavior: any potential junk value?
-- composition convention
-- typeclass assumptions
-- finite/infinite conventions
+Fix some design choices (select items below that are applicable to your goal):
+- Carrier type: what Lean type represents the object you study (e.g. a plain function, a structure, a measure)?
+- Namespace: which namespace will your definitions and lemmas live in?
+- Parameter order: in what order does each definition take its arguments, given that this fixes what can be partially applied?
+- Totalization/boundary behavior: what do your functions return where the math is undefined (junk values such as `x / 0 = 0`)?
+- Composition convention: if your objects compose, what does `f.comp g` mean and in which order does it apply?
+- Typeclass assumptions: what minimal structure (e.g. `[MeasurableSpace Ω]`, `[Fintype ι]`) does each definition or theorem require?
+- Finite/infinite conventions: do you assume finite or general settings (sums vs. integrals, `ℝ` vs. `ℝ≥0∞`/`EReal`)?
 
 
 ## 7. Existing Mathlib and Statlib foundations
-
-List which PR/file you might be mainly use; also state what willl not be use 
+Which files or PRs will you build on, and which related ones will you not use?
 
 ## 8. Proposed file organization
 
