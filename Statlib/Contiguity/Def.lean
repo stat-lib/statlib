@@ -46,15 +46,27 @@ trivially from `Filter.tendsto_bot`.
 -/
 def Contiguous2 (l : Filter α) (P Q : ∀ a, ProbabilityMeasure (Ω a)) : Prop :=
   ∀ (L : ProbabilityMeasure ℝ≥0∞) ⦃h : Filter α⦄, h ≤ l → h.NeBot →
-    Tendsto (fun a => (Q a).map
-      ((Measure.measurable_rnDeriv (P a) (Q a)).aemeasurable)) h (𝓝 L) →
+    Tendsto (show α → ProbabilityMeasure ℝ≥0∞ from fun a =>
+      (⟨(Q a : Measure (Ω a)).map ((P a : Measure (Ω a)).rnDeriv (Q a)),
+        (Measure.isProbabilityMeasure_map_iff
+          (μ := (Q a : Measure (Ω a)))
+          (f := (P a : Measure (Ω a)).rnDeriv (Q a))
+          (Measure.measurable_rnDeriv (P a : Measure (Ω a))
+            (Q a : Measure (Ω a))).aemeasurable).2 inferInstance⟩ :
+        ProbabilityMeasure ℝ≥0∞)) h (𝓝 L) →
       L {0} = 0
 
 /-- Contiguity characterized by unit mean for weak limits of reciprocal likelihood-ratio laws. -/
 def Contiguous3 (l : Filter α) (P Q : ∀ a, ProbabilityMeasure (Ω a)) : Prop :=
   ∀ (V : ProbabilityMeasure ℝ≥0∞) ⦃h : Filter α⦄, h ≤ l → h.NeBot →
-    Tendsto (fun a => (P a).map
-      ((Measure.measurable_rnDeriv (Q a) (P a)).aemeasurable)) h (𝓝 V) →
+    Tendsto (show α → ProbabilityMeasure ℝ≥0∞ from fun a =>
+      (⟨(P a : Measure (Ω a)).map ((Q a : Measure (Ω a)).rnDeriv (P a)),
+        (Measure.isProbabilityMeasure_map_iff
+          (μ := (P a : Measure (Ω a)))
+          (f := (Q a : Measure (Ω a)).rnDeriv (P a))
+          (Measure.measurable_rnDeriv (Q a : Measure (Ω a))
+            (P a : Measure (Ω a))).aemeasurable).2 inferInstance⟩ :
+        ProbabilityMeasure ℝ≥0∞)) h (𝓝 V) →
       ∫⁻ ω, ω ∂V = 1
 
 /-- Convergence in measure for a family of probability measures on varying measurable spaces. -/
