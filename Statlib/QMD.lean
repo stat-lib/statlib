@@ -8,6 +8,7 @@ module
 public import Mathlib.Analysis.Asymptotics.TVS
 public import Mathlib.MeasureTheory.Function.LpSeminorm.LpNorm
 public import Mathlib.MeasureTheory.Measure.Decomposition.IntegralRNDeriv
+public import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
 
 /-!
 # Quadratic mean differentiability
@@ -141,8 +142,8 @@ private lemma Lp.lintegral_enorm_mul_sqrt_rnDeriv_rpow_two {Ω : Type*} {mΩ : M
 private lemma Lp.eLpNorm_mul_sqrt_rnDeriv {Ω : Type*} {mΩ : MeasurableSpace Ω} {m μ : Measure Ω}
     [SigmaFinite m] [m.HaveLebesgueDecomposition μ] (hm : m ≪ μ) (u : Ω →₂[m] ℝ) :
     eLpNorm (fun ω => u ω * √(m.rnDeriv μ ω).toReal) 2 μ = eLpNorm u 2 m := by
-  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simp) (by simp),
-    eLpNorm_eq_lintegral_rpow_enorm_toReal (by simp) (by simp)]
+  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simp) (by simp) (by fun_prop),
+    eLpNorm_eq_lintegral_rpow_enorm_toReal (by simp) (by simp) (by fun_prop)]
   simpa using congrArg (fun x => x ^ (1 / ENNReal.toReal (2 : ℝ≥0∞)))
     (Lp.lintegral_enorm_mul_sqrt_rnDeriv_rpow_two hm u)
 
@@ -150,9 +151,9 @@ private lemma Lp.eLpNorm_mul_sqrt_rnDeriv {Ω : Type*} {mΩ : MeasurableSpace Ω
 private lemma memLp_sqrt_rnDeriv {Ω : Type*} {mΩ : MeasurableSpace Ω} (m μ : Measure Ω)
     [IsFiniteMeasure m] :
     MemLp (fun ω => √(m.rnDeriv μ ω).toReal) 2 μ := by
-  refine
-    ⟨((Measure.measurable_rnDeriv _ _).aemeasurable.ennreal_toReal.sqrt).aestronglyMeasurable, ?_⟩
-  rw [eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top (by simp) (by simp)]
+  rw [memLp_iff, eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top
+    (by simp) (by simp)
+    ((Measure.measurable_rnDeriv _ _).aemeasurable.ennreal_toReal.sqrt).aestronglyMeasurable]
   calc
     ∫⁻ a, ‖√(m.rnDeriv μ a).toReal‖ₑ ^ (2 : ℝ) ∂μ = ∫⁻ a, m.rnDeriv μ a ∂μ :=
       lintegral_congr_ae (enorm_sqrt_toReal_rnDeriv_rpow_two m μ)
@@ -162,27 +163,21 @@ private lemma memLp_sqrt_rnDeriv {Ω : Type*} {mΩ : MeasurableSpace Ω} (m μ :
 private lemma Lp.memLp_mul_sqrt_rnDeriv {Ω : Type*} {mΩ : MeasurableSpace Ω} {m μ : Measure Ω}
     [SigmaFinite m] [m.HaveLebesgueDecomposition μ] (hm : m ≪ μ) (u : Ω →₂[m] ℝ) :
     MemLp (fun ω => u ω * √(m.rnDeriv μ ω).toReal) 2 μ := by
-  refine ⟨(Lp.stronglyMeasurable u).aestronglyMeasurable.mul
-    ((Measure.measurable_rnDeriv _ _).aemeasurable.ennreal_toReal.sqrt).aestronglyMeasurable, ?_⟩
+  change eLpNorm (fun ω => u ω * √(m.rnDeriv μ ω).toReal) 2 μ < ∞
   rw [Lp.eLpNorm_mul_sqrt_rnDeriv hm u]
-  exact (Lp.memLp u).2
+  exact Lp.memLp u
 
 /-- Multiplication by `√(dm/dμ)` transports the real `L²` seminorm. -/
 private lemma Lp.lpNorm_mul_sqrt_rnDeriv {Ω : Type*} {mΩ : MeasurableSpace Ω} {m μ : Measure Ω}
     [SigmaFinite m] [m.HaveLebesgueDecomposition μ] (hm : m ≪ μ) (u : Ω →₂[m] ℝ) :
     lpNorm (fun ω => u ω * √(m.rnDeriv μ ω).toReal) 2 μ = lpNorm u 2 m := by
-  rw [← toReal_eLpNorm (Lp.memLp_mul_sqrt_rnDeriv hm u).aestronglyMeasurable,
-    ← toReal_eLpNorm (Lp.memLp u).aestronglyMeasurable, Lp.eLpNorm_mul_sqrt_rnDeriv hm u]
+  rw [← toReal_eLpNorm, ← toReal_eLpNorm, Lp.eLpNorm_mul_sqrt_rnDeriv hm u]
 
 /-- The real `Lᵖ` seminorm is invariant under almost-everywhere equality. -/
 private lemma lpNorm_congr_ae {Ω F : Type*} {mΩ : MeasurableSpace Ω} [NormedAddCommGroup F]
     {μ : Measure Ω} {p : ℝ≥0∞} {f g : Ω → F} (hfg : f =ᵐ[μ] g) :
     lpNorm f p μ = lpNorm g p μ := by
-  by_cases hf : AEStronglyMeasurable f μ
-  · have hg : AEStronglyMeasurable g μ := hf.congr hfg
-    rw [← toReal_eLpNorm hf, ← toReal_eLpNorm hg, eLpNorm_congr_ae hfg]
-  · have hg : ¬ AEStronglyMeasurable g μ := fun hg => hf (hg.congr hfg.symm)
-    simp [lpNorm, hf, hg]
+  rw [← toReal_eLpNorm, ← toReal_eLpNorm, eLpNorm_congr_ae hfg]
 
 /-- If two versions of a random variable agree almost everywhere under a measure with density
 `p` with respect to `μ`, then the density `p` vanishes `μ`-almost everywhere on the set where the
@@ -231,7 +226,7 @@ private lemma lpNorm_score_eq_norm {Ω E : Type*} {mΩ : MeasurableSpace Ω} [Se
     refine Lp.lpNorm_mul_sqrt_rnDeriv_of_ae_eq hsθ ((2⁻¹ : ℝ) • A v) ?_
     exact (Lp.coeFn_smul (2⁻¹ : ℝ) (A v)).symm
   _ = ‖(2⁻¹ : ℝ) • A v‖ := by
-    rw [← toReal_eLpNorm (Lp.memLp ((2⁻¹ : ℝ) • A v)).aestronglyMeasurable, ← Lp.norm_def]
+    rw [← toReal_eLpNorm, ← Lp.norm_def]
 
 /-- After dividing by the scalar used in a local path, the transported score term is bounded above
 by the unscaled score term. -/
@@ -502,7 +497,6 @@ private lemma score_tendsto_zero' {Ω E : Type*} {mΩ : MeasurableSpace Ω} [Add
   rw [Lp.norm_def, toReal_eLpNorm]
   · refine (Lp.lpNorm_mul_sqrt_rnDeriv_of_ae_eq (hs _ hθ) ((2⁻¹ : ℝ) • A (p.1 • h)) ?_).symm
     exact(Lp.coeFn_smul (2⁻¹ : ℝ) (A (p.1 • h))).symm
-  · fun_prop
 
 /-- The square-root density itself is continuous along an admissible Hadamard path in `L²(μ)`. -/
 private lemma tendsto_sqrt_density {Ω E : Type*} {mΩ : MeasurableSpace Ω} [AddCommMonoid E]
