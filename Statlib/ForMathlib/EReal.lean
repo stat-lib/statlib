@@ -151,7 +151,6 @@ lemma EReal.add_sub_add (a b : EReal) {c d : EReal} (hc : c ≠ ⊥) (hd : d ≠
     ring
   · norm_cast
   · norm_cast
-  · norm_cast
 
 lemma EReal.mul_sub_of_eq_zero {a b c : EReal} (h : b = 0 ∨ c = 0) :
     a * (b - c) = a * b - a * c := by

@@ -690,23 +690,23 @@ lemma eintegral_add (hf : AEMeasurable f μ) (hg : AEMeasurable g μ)
         | inl h' => exact h'
         | inr h' =>
           intro h_false
-          simp [h_false, EReal.top_sub h'] at h
+          exact h (by rw [h_false, EReal.top_sub h'])
       | inr h =>
         refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_right _ _)) (Ne.lt_top ?_)
         intro h_false
-        simp [h_false] at h
+        exact h (by rw [h_false, EReal.sub_top])
     · cases h_ne_bot_1 with
       | inl h =>
         refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_left _ _)) (Ne.lt_top ?_)
         intro h_false
-        simp [h_false] at h
+        exact h (by rw [h_false, EReal.sub_top])
       | inr h =>
         refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_right _ _)) (Ne.lt_top ?_)
         cases hg_int.eintegral_posPartFun_ne_top_or_eintegral_negPartFun_ne_top with
         | inl h' => exact h'
         | inr h' =>
           intro h_false
-          simp [h_false, EReal.top_sub h'] at h
+          exact h (by rw [h_false, EReal.top_sub h'])
   · exact fun _ ↦ add_nonneg (by simp) (by simp)
   · exact fun _ ↦ add_nonneg (by simp) (by simp)
 
@@ -728,10 +728,10 @@ lemma eintegral_add' (hf : AEMeasurable f μ) (hg : AEMeasurable g μ)
     simp only [eintegral_eq_posPartFun_sub_negPartFun f, sub_eq_add_neg, EReal.add_eq_bot_iff,
       EReal.neg_eq_bot_iff] at hf_int_eq_bot
     have : ∫ᵉ x, f⁺ x ∂μ ≠ ⊥ := ne_bot_of_le_ne_bot (by simp) <| eintegral_nonneg (by simp)
-    simpa [this] using hf_int_eq_bot
+    exact hf_int_eq_bot.resolve_left this
   have hg₂_int : ∫ᵉ x, g⁻ x ∂μ ≠ ⊤ := by
     intro h_false
-    simp [eintegral_eq_posPartFun_sub_negPartFun g, h_false] at hg_ne_bot
+    exact hg_ne_bot (by rw [eintegral_eq_posPartFun_sub_negPartFun g, h_false, EReal.sub_top])
   have hg₁_int : ∫ᵉ x, g⁺ x ∂μ ≠ ⊤ := by
     intro h_false
     rw [eintegral_eq_posPartFun_sub_negPartFun g, h_false, EReal.top_sub hg₂_int] at hg_ne_top
@@ -745,11 +745,13 @@ lemma eintegral_add' (hf : AEMeasurable f μ) (hg : AEMeasurable g μ)
   simp_rw [hf_add_g]
   rw [eintegral_sub_of_nonneg (fun _ ↦ add_nonneg (by simp) (by simp))
     (fun _ ↦ add_nonneg (by simp) (by simp)) (by fun_prop) (by fun_prop)]
-  · suffices ∫ᵉ x, f⁻ x + g⁻ x ∂μ = ⊤ by simp [this]
-    rw [← top_le_iff]
-    calc ⊤
-    _ = ∫ᵉ x, f⁻ x ∂μ := by rw [hf₂_int]
-    _ ≤ ∫ᵉ x, f⁻ x + g⁻ x ∂μ := eintegral_mono (fun _ ↦ le_add_of_nonneg_right (by simp))
+  · have hneg : ∫ᵉ x, f⁻ x + g⁻ x ∂μ = ⊤ := by
+      rw [← top_le_iff]
+      calc ⊤
+      _ = ∫ᵉ x, f⁻ x ∂μ := by rw [hf₂_int]
+      _ ≤ ∫ᵉ x, f⁻ x + g⁻ x ∂μ :=
+        eintegral_mono (fun _ ↦ le_add_of_nonneg_right (by simp))
+    rw [hneg, EReal.sub_top]
   · have h_le x : min (f⁺ x + g⁺ x) (f⁻ x + g⁻ x) ≤ min (f⁺ x) (g⁻ x) + min (f⁻ x) (g⁺ x) := by
       rcases EReal.posPart_fun_eq_zero_or_negPart_fun_eq_zero f x with hf | hf <;>
         rcases EReal.posPart_fun_eq_zero_or_negPart_fun_eq_zero g x with hg | hg <;>

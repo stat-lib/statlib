@@ -46,15 +46,13 @@ trivially from `Filter.tendsto_bot`.
 -/
 def Contiguous2 (l : Filter α) (P Q : ∀ a, ProbabilityMeasure (Ω a)) : Prop :=
   ∀ (L : ProbabilityMeasure ℝ≥0∞) ⦃h : Filter α⦄, h ≤ l → h.NeBot →
-    Tendsto (fun a => (Q a).map
-      ((Measure.measurable_rnDeriv (P a) (Q a)).aemeasurable)) h (𝓝 L) →
+    Tendsto (fun a ↦ (Q a).map ((P a : Measure (Ω a)).rnDeriv (Q a))) h (𝓝 L) →
       L {0} = 0
 
 /-- Contiguity characterized by unit mean for weak limits of reciprocal likelihood-ratio laws. -/
 def Contiguous3 (l : Filter α) (P Q : ∀ a, ProbabilityMeasure (Ω a)) : Prop :=
   ∀ (V : ProbabilityMeasure ℝ≥0∞) ⦃h : Filter α⦄, h ≤ l → h.NeBot →
-    Tendsto (fun a => (P a).map
-      ((Measure.measurable_rnDeriv (Q a) (P a)).aemeasurable)) h (𝓝 V) →
+    Tendsto (fun a ↦ (P a).map ((Q a : Measure (Ω a)).rnDeriv (P a))) h (𝓝 V) →
       ∫⁻ ω, ω ∂V = 1
 
 /-- Convergence in measure for a family of probability measures on varying measurable spaces. -/
