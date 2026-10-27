@@ -11,14 +11,21 @@ autoImplicit = true
 weak.linter.mathlibStandardSet = true
 
 [[require]]
-name = "mathlib"
-git = "https://github.com/leanprover-community/mathlib4"
-rev = "051bc081081f2bb77b81d47ee69146c4cef28bbe"
-
-[[require]]
 name = "subverso"
 git = "https://github.com/leanprover/subverso"
 rev = "main"
+
+[[require]]
+name = "TestingLowerBounds"
+git = "https://github.com/RemyDegenne/testing-lower-bounds"
+rev = "cdbdf468124bf309e3d47feca3eb42f73d069c50"
+
+# Mathlib is required last so that its pinned dependency versions take precedence
+# over those of the other git dependencies (TestingLowerBounds, subverso).
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "051bc081081f2bb77b81d47ee69146c4cef28bbe"
 
 [[lean_lib]]
 name = "Statlib"

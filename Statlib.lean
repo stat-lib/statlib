@@ -16,3 +16,6 @@ import Statlib.ForMathlib.MeasureTheory.Integral.EReal.Prod
 import Statlib.ForMathlib.MeasureTheory.Order.Group.Lattice
 import Statlib.Inference.Inference
 import Statlib.Inference.QMD
+import Statlib.Testing.Basic
+import Statlib.Testing.BayesRisk
+import Statlib.Testing.NeymanPearson
