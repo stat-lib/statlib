@@ -104,6 +104,15 @@ lemma const_mul_le_liminf {c a : ℝ≥0∞} {u : ℕ → ℝ≥0∞}
   · simp
   exact (ENNReal.Tendsto.const_mul h (Or.inl ha0)).liminf_eq.ge
 
+/-- If `x ≤ c + 1/(n+1)` for every `n`, then `x ≤ c`.
+
+The thresholds `c + 1/(n+1)` tend to `c`, so anything below all of them is below `c`. -/
+lemma le_of_le_add_one_div {x c : ℝ≥0∞}
+    (h : ∀ n : ℕ, x ≤ c + 1 / (n + 1 : ℝ≥0∞)) : x ≤ c := by
+  have h0 : Tendsto (fun n : ℕ ↦ 1 / ((n : ℝ≥0∞) + 1)) atTop (𝓝 0) := by
+    simpa using (tendsto_add_atTop_iff_nat 1).2 ENNReal.tendsto_inv_nat_nhds_zero
+  exact ge_of_tendsto' (by simpa using tendsto_const_nhds.add h0) h
+
 end Topology
 
 end ENNReal

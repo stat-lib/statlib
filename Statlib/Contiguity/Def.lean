@@ -146,12 +146,6 @@ end BasicResults
 
 section PlannedCharacterizations
 
-/- TODO: Prove that `Contiguous1` implies `Contiguous2`.
-theorem Contiguous1.contiguous2 {l : Filter α}
-    (P Q : ∀ a, ProbabilityMeasure (Ω a))
-    (hPQ : Contiguous1 l P Q) : Contiguous2 l P Q
--/
-
 /- TODO: Prove the equivalence of `Contiguous2` and `Contiguous3`.
 theorem contiguous2_iff_contiguous3 {l : Filter α}
     (P Q : ∀ a, ProbabilityMeasure (Ω a)) :
