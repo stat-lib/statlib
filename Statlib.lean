@@ -142,6 +142,7 @@ import Statlib.ForMathlib.Probability.StrongLaw
 import Statlib.ForMathlib.Topology.Order.MonotoneConvergence
 import Statlib.Inference.Inference
 import Statlib.Inference.QMD
+import Statlib.Privacy.DPHamming.Basic
 import Statlib.Testing.Binary
 import Statlib.Testing.BinaryRenyi
 import Statlib.Testing.ChangeMeasure
