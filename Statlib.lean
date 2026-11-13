@@ -38,6 +38,10 @@ import Statlib.Divergence.KullbackLeibler.CondKL
 import Statlib.Divergence.KullbackLeibler.Estimation
 import Statlib.Divergence.KullbackLeibler.Event
 import Statlib.Divergence.KullbackLeibler.KLDivFun
+import Statlib.Divergence.MaximalLeakage.Basic
+import Statlib.Divergence.MaximalLeakage.MutualInfo
+import Statlib.Divergence.MaximalLeakage.Operational
+import Statlib.Divergence.MaximalLeakage.Properties
 import Statlib.Divergence.MutualInformation.Basic
 import Statlib.Divergence.MutualInformation.Bool
 import Statlib.Divergence.MutualInformation.Estimation
@@ -52,6 +56,7 @@ import Statlib.Divergence.Renyi.Order.Limits
 import Statlib.Divergence.Renyi.Prod
 import Statlib.Divergence.Renyi.ProdCountable
 import Statlib.Divergence.Renyi.Variational
+import Statlib.Divergence.RenyiInfinity.Basic
 import Statlib.Divergence.StatInfo.Basic
 import Statlib.Divergence.StatInfo.CurvatureMeasure
 import Statlib.Divergence.StatInfo.Event
