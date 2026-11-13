@@ -139,6 +139,10 @@ import Statlib.ForMathlib.Topology.Order.MonotoneConvergence
 import Statlib.Inference.Inference
 import Statlib.Inference.QMD
 import Statlib.Privacy.DP.Basic
+import Statlib.Privacy.DP.Exponential
+import Statlib.Privacy.DP.Geometric
+import Statlib.Privacy.DP.Laplace
+import Statlib.Privacy.DP.RandomizedResponse
 import Statlib.Testing.Binary
 import Statlib.Testing.BinaryRenyi
 import Statlib.Testing.ChangeMeasure
