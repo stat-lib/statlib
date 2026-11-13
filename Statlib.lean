@@ -23,6 +23,7 @@ import Statlib.Divergence.FDiv.Measurable
 import Statlib.Divergence.FDiv.SupRatio
 import Statlib.Divergence.FDiv.Trim
 import Statlib.Divergence.FDiv.TrimApprox
+import Statlib.Divergence.GainLeakage.Basic
 import Statlib.Divergence.Hellinger.Basic
 import Statlib.Divergence.Hellinger.CondHellinger
 import Statlib.Divergence.Hellinger.HellingerDivFun
@@ -38,6 +39,10 @@ import Statlib.Divergence.KullbackLeibler.CondKL
 import Statlib.Divergence.KullbackLeibler.Estimation
 import Statlib.Divergence.KullbackLeibler.Event
 import Statlib.Divergence.KullbackLeibler.KLDivFun
+import Statlib.Divergence.MaximalLeakage.Basic
+import Statlib.Divergence.MaximalLeakage.MutualInfo
+import Statlib.Divergence.MaximalLeakage.Operational
+import Statlib.Divergence.MaximalLeakage.Properties
 import Statlib.Divergence.MutualInformation.Basic
 import Statlib.Divergence.MutualInformation.Bool
 import Statlib.Divergence.MutualInformation.Estimation
