@@ -24,7 +24,7 @@ and similarly for binary products.
 * `MeasureTheory.Measure.pi_eq_withDensity_prod_rnDeriv`: if `μ i ≪ ν i` for all `i`, then
   `Measure.pi μ = (Measure.pi ν).withDensity (fun x ↦ ∏ i, ∂(μ i)/∂(ν i) (x i))`.
 * `MeasureTheory.Measure.rnDeriv_pi`: `∂(Measure.pi μ)/∂(Measure.pi ν) =ᵐ ∏ i, ∂(μ i)/∂(ν i) (x i)`.
-* `MeasureTheory.Measure.AbsolutelyContinuous.pi`: if `μ i ≪ ν i` for all `i`, then
+* `MeasureTheory.Measure.AbsolutelyContinuous.pi'`: if `μ i ≪ ν i` for all `i`, then
   `Measure.pi μ ≪ Measure.pi ν`.
 * `MeasureTheory.Measure.not_mutuallySingular_pi`: products of σ-finite measures which are not
   mutually singular are not mutually singular.
@@ -149,7 +149,7 @@ lemma rnDeriv_pi [∀ i, SigmaFinite (μ i)] [∀ i, SigmaFinite (ν i)] :
     ENNReal.prod_div_distrib_of_ne_top fun i _ ↦ h5 i]
 
 /-- If `μ i ≪ ν i` for all `i`, then `Measure.pi μ ≪ Measure.pi ν`. -/
-lemma AbsolutelyContinuous.pi [∀ i, SigmaFinite (μ i)] [∀ i, SigmaFinite (ν i)]
+lemma AbsolutelyContinuous.pi' [∀ i, SigmaFinite (μ i)] [∀ i, SigmaFinite (ν i)]
     (h : ∀ i, μ i ≪ ν i) :
     Measure.pi μ ≪ Measure.pi ν := by
   rw [pi_eq_withDensity_prod_rnDeriv h]
@@ -163,9 +163,9 @@ lemma not_mutuallySingular_pi [∀ i, SigmaFinite (μ i)] [∀ i, SigmaFinite (�
   -- product of the `ρ i` is absolutely continuous with respect to both products
   set ρ : (i : ι) → Measure (X i) := fun i ↦ (ν i).withDensity ((μ i).rnDeriv (ν i))
   have (i : ι) : NeZero (ρ i) := ⟨by simpa [ρ] using h i⟩
-  have hρμ : Measure.pi ρ ≪ Measure.pi μ := AbsolutelyContinuous.pi fun i ↦
+  have hρμ : Measure.pi ρ ≪ Measure.pi μ := AbsolutelyContinuous.pi' fun i ↦
     absolutelyContinuous_of_le (withDensity_rnDeriv_le (μ i) (ν i))
-  have hρν : Measure.pi ρ ≪ Measure.pi ν := AbsolutelyContinuous.pi fun i ↦
+  have hρν : Measure.pi ρ ≪ Measure.pi ν := AbsolutelyContinuous.pi' fun i ↦
     withDensity_absolutelyContinuous (ν i) ((μ i).rnDeriv (ν i))
   intro h_ms
   exact NeZero.ne _ ((MutuallySingular.self_iff _).mp (h_ms.mono_ac hρμ hρν))
