@@ -56,6 +56,7 @@ import Statlib.Divergence.Renyi.Order.Limits
 import Statlib.Divergence.Renyi.Prod
 import Statlib.Divergence.Renyi.ProdCountable
 import Statlib.Divergence.Renyi.Variational
+import Statlib.Divergence.RenyiInfinity.Basic
 import Statlib.Divergence.StatInfo.Basic
 import Statlib.Divergence.StatInfo.CurvatureMeasure
 import Statlib.Divergence.StatInfo.Event
