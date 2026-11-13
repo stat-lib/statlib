@@ -23,6 +23,7 @@ import Statlib.Divergence.FDiv.Measurable
 import Statlib.Divergence.FDiv.SupRatio
 import Statlib.Divergence.FDiv.Trim
 import Statlib.Divergence.FDiv.TrimApprox
+import Statlib.Divergence.GainLeakage.Basic
 import Statlib.Divergence.Hellinger.Basic
 import Statlib.Divergence.Hellinger.CondHellinger
 import Statlib.Divergence.Hellinger.HellingerDivFun
