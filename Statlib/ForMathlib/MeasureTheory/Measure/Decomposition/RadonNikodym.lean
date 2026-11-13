@@ -48,15 +48,15 @@ lemma singularPart_add_lintegral_rnDeriv (μ ν : Measure α) [μ.HaveLebesgueDe
     μ.singularPart ν Set.univ + ∫⁻ x, μ.rnDeriv ν x ∂ν = μ Set.univ := by
   simpa using singularPart_add_setLIntegral_rnDeriv μ ν MeasurableSet.univ
 
-lemma rnDeriv_restrict_restrict (μ ν : Measure α) [SigmaFinite μ] [SigmaFinite ν]
-    {s : Set α} (hs : MeasurableSet s) :
+lemma rnDeriv_restrict_restrict (μ ν : Measure α) [μ.HaveLebesgueDecomposition ν]
+    [SigmaFinite ν] {s : Set α} (hs : MeasurableSet s) :
     (μ.restrict s).rnDeriv (ν.restrict s) =ᵐ[ν.restrict s] μ.rnDeriv ν := by
   refine (eq_rnDeriv (s := (μ.singularPart ν).restrict s) (measurable_rnDeriv μ ν)
     (((mutuallySingular_singularPart μ ν).restrict s).symm.restrict s).symm ?_).symm
   conv_lhs => rw [μ.haveLebesgueDecomposition_add ν]
   rw [restrict_add, restrict_withDensity hs]
 
-lemma singularPart_restrict_restrict (μ ν : Measure α) [SigmaFinite μ] [SigmaFinite ν]
+lemma singularPart_restrict_restrict (μ ν : Measure α) [μ.HaveLebesgueDecomposition ν]
     {s : Set α} (hs : MeasurableSet s) :
     (μ.restrict s).singularPart (ν.restrict s) = (μ.singularPart ν).restrict s := by
   refine (eq_singularPart (measurable_rnDeriv μ ν)

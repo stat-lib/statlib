@@ -32,6 +32,8 @@ measure `μ`.
   `KL(ρ, μ ⊗ₘ η) = KL(ρ.fst, μ) + KL(ρ, ρ.fst ⊗ₘ η)`.
 * `InformationTheory.klDiv_prod_eq_klDiv_snd_add`: `KL(ρ, μ × ξ) = KL(ρ.snd, ξ) + KL(ρ, μ × ρ.snd)`
   for a probability measure `μ`.
+* `InformationTheory.klDiv_compProd_left_of_ae`: `KL(μ ⊗ₘ κ, ν ⊗ₘ κ) = KL(μ, ν)` for a kernel `κ`
+  which is a probability measure on a measurable set of full `μ`- and `ν`-measure.
 
 ## Implementation notes
 
@@ -134,5 +136,34 @@ theorem klDiv_prod_eq_klDiv_snd_add (ρ : Measure (α × β)) [IsFiniteMeasure �
   rw [Measure.fst_map_swap, Measure.compProd_const, Measure.compProd_const, ← Measure.prod_swap,
     ← Measure.prod_swap (μ := μ), klDiv_map_swap, klDiv_map_swap] at h
   exact h
+
+/-- `klDiv_compProd_left` for a kernel which is only a probability measure on a measurable set of
+full measure for both `μ` and `ν`. -/
+lemma klDiv_compProd_left_of_ae (μ ν : Measure α) [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (κ : Kernel α β) [IsSFiniteKernel κ] {S : Set α} (hS : MeasurableSet S)
+    (hκ : ∀ a ∈ S, IsProbabilityMeasure (κ a)) (hμ : ∀ᵐ a ∂μ, a ∈ S) (hν : ∀ᵐ a ∂ν, a ∈ S) :
+    klDiv (μ ⊗ₘ κ) (ν ⊗ₘ κ) = klDiv μ ν := by
+  classical
+  rcases isEmpty_or_nonempty β with hβ | ⟨⟨b⟩⟩
+  · -- if `β` is empty, then `S` is empty, hence `μ = ν = 0`
+    have hS_empty (a : α) (ha : a ∈ S) : False :=
+      have := hκ a ha; IsProbabilityMeasure.ne_zero (κ a) (κ a).eq_zero_of_isEmpty
+    have hμ0 : μ = 0 := ae_eq_bot.1 (Filter.eventually_false_iff_eq_bot.1 (hμ.mono hS_empty))
+    have hν0 : ν = 0 := ae_eq_bot.1 (Filter.eventually_false_iff_eq_bot.1 (hν.mono hS_empty))
+    simp [hμ0, hν0]
+  let κ' : Kernel α β := Kernel.piecewise hS κ (Kernel.const α (Measure.dirac b))
+  have hκ' : IsMarkovKernel κ' := ⟨fun a ↦ by
+    by_cases ha : a ∈ S
+    · simp only [κ', Kernel.piecewise_apply, ha, ite_true]
+      exact hκ a ha
+    · simp only [κ', Kernel.piecewise_apply, ha, ite_false, Kernel.const_apply]
+      infer_instance⟩
+  have hμκ : μ ⊗ₘ κ = μ ⊗ₘ κ' := Measure.compProd_congr (by
+    filter_upwards [hμ] with a ha
+    simp [κ', Kernel.piecewise_apply, ha])
+  have hνκ : ν ⊗ₘ κ = ν ⊗ₘ κ' := Measure.compProd_congr (by
+    filter_upwards [hν] with a ha
+    simp [κ', Kernel.piecewise_apply, ha])
+  rw [hμκ, hνκ, klDiv_compProd_left]
 
 end InformationTheory
