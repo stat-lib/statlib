@@ -145,8 +145,8 @@ lemma EReal.add_sub_add (a b : EReal) {c d : EReal} (hc : c ≠ ⊥) (hd : d ≠
   cases a <;> cases b <;> cases c <;> cases d
   -- 81 goals :)
   any_goals simp [hc, hd]
-  any_goals simp at hc
-  any_goals simp at hd
+  all_goals simp at hc
+  all_goals simp at hd
   · norm_cast
     ring
   · norm_cast
@@ -249,7 +249,7 @@ lemma EReal.ne_top_exists_finite_iff {a : EReal} : a ≠ ⊤ ↔ ∃ b, b ≠ �
 
 noncomputable
 instance : ENorm EReal where
-  enorm x := (max x 0).toENNReal + (- min x 0).toENNReal
+  eNorm x := (max x 0).toENNReal + (- min x 0).toENNReal
 
 noncomputable instance : SMul ℝ≥0 EReal where smul c x := c * x
 noncomputable instance : SMul ℝ≥0∞ EReal where smul c x := c * x

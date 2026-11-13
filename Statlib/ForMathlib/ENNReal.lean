@@ -25,7 +25,7 @@ abbrev fsupport {α β : Type*} [Top β] [Zero β] (f : α → β) := {x | f x �
 lemma fsupport_compl {α β : Type*} [Top β] [Zero β] (X : α → β) :
     X.fsupportᶜ = {ω | X ω = ⊤} ∪ {ω | X ω = 0} := by
   ext ω
-  simp [-not_and, not_and_or]
+  simp [-not_and]
 
 lemma fsupport_compl_disjoint {α β : Type*} [Top β] [Zero β] (X : α → β) (h : (0 : β) ≠ ⊤) :
     Disjoint {ω | X ω = ⊤} {ω | X ω = 0} := by

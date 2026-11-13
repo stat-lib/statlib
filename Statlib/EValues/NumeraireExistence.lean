@@ -612,12 +612,11 @@ theorem IsEVarClass.exists_isLogNumeraireFor (h𝓔 : IsEVarClass 𝓔) (P : Mea
   -- all the sets `{Xo n ≠ ∞}` agree up to null sets
   set A : Set 𝓧 := {x | Xo 0 x ≠ ∞} with hA_def
   have hA (n : ℕ) : P {x | Xo n x ≠ ∞} = P A := by
-    refine measure_congr (Filter.EventuallyEq.symm ?_)
+    refine measure_congr (Filter.EventuallyEqSet.symm ?_)
     filter_upwards [lt_top_of_numeraireOfBounded_lt_top (boundedLogUtility_le (hN n)) P h𝓔
         (hXo_evar 0), lt_top_of_numeraireOfBounded_lt_top (boundedLogUtility_le (hN 0)) P h𝓔
         (hXo_evar n)] with x h1 h2
-    exact propext
-      ⟨fun h ↦ (h2 (lt_top_iff_ne_top.mpr h)).ne, fun h ↦ (h1 (lt_top_iff_ne_top.mpr h)).ne⟩
+    exact ⟨fun h ↦ (h2 (lt_top_iff_ne_top.mpr h)).ne, fun h ↦ (h1 (lt_top_iff_ne_top.mpr h)).ne⟩
   have hPA : P A ≠ ∞ := measure_ne_top _ _
   -- the first order condition, in `ℝ≥0∞` form
   have hfoc (n : ℕ) {Y : 𝓧 → ℝ≥0∞} (hY : Y ∈ 𝓔) :
@@ -834,10 +833,7 @@ lemma lintegral_div_logNumeraire_le_measure_fsupport (P : Measure 𝓧) (h𝓔 :
       split_ifs with h
       · exact absurd h.2 hP
       · rfl
-    have h_fsupport : (1 : 𝓧 → ℝ≥0∞).fsupport = .univ := by
-      ext
-      simp [Function.fsupport]
-    simp [h_one, h_fsupport, h_univ]
+    simp [h_one, h_univ]
 
 lemma lintegral_div_logNumeraire_le (P : Measure 𝓧) (h𝓔 : IsEVarClass 𝓔) (hX : X ∈ 𝓔) :
     ∫⁻ x, X x / logNumeraire P 𝓔 x ∂P

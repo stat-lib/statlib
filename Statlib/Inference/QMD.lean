@@ -108,7 +108,7 @@ theorem HasQuadraticMeanDerivWithinAt.tendsto_local_path_remainder {Ω E : Type*
     hbigO).tendsto_inv_smul_nhds_zero
 
 /-- The squared `ℝ≥0∞`-norm of `√((dm/dμ).toReal)` is `dm/dμ`, almost everywhere. -/
-private lemma enorm_sqrt_toReal_rnDeriv_rpow_two {Ω : Type*} {mΩ : MeasurableSpace Ω}
+private lemma eNorm_sqrt_toReal_rnDeriv_rpow_two {Ω : Type*} {mΩ : MeasurableSpace Ω}
     (m μ : Measure Ω) [SigmaFinite m] :
     ∀ᵐ ω ∂μ, ‖√(m.rnDeriv μ ω).toReal‖ₑ ^ (2 : ℝ) = m.rnDeriv μ ω := by
   filter_upwards [Measure.rnDeriv_lt_top m μ] with ω hω
@@ -118,18 +118,18 @@ private lemma enorm_sqrt_toReal_rnDeriv_rpow_two {Ω : Type*} {mΩ : MeasurableS
   exact hω.ne
 
 /-- The `L²` lintegral is unchanged after transporting `u` from `m` to `μ` by `√(dm/dμ)`. -/
-private lemma Lp.lintegral_enorm_mul_sqrt_rnDeriv_rpow_two {Ω : Type*} {mΩ : MeasurableSpace Ω}
+private lemma Lp.lintegral_eNorm_mul_sqrt_rnDeriv_rpow_two {Ω : Type*} {mΩ : MeasurableSpace Ω}
     {m μ : Measure Ω} [SigmaFinite m] [m.HaveLebesgueDecomposition μ] (hm : m ≪ μ) (u : Ω →₂[m] ℝ) :
     ∫⁻ a, ‖u a * √(m.rnDeriv μ a).toReal‖ₑ ^ (2 : ℝ) ∂μ = ∫⁻ a, ‖u a‖ₑ ^ (2 : ℝ) ∂m := by
   calc
     ∫⁻ a, ‖u a * √(m.rnDeriv μ a).toReal‖ₑ ^ (2 : ℝ) ∂μ
         = ∫⁻ a, m.rnDeriv μ a * ‖u a‖ₑ ^ (2 : ℝ) ∂μ := by
       apply lintegral_congr_ae
-      filter_upwards [enorm_sqrt_toReal_rnDeriv_rpow_two m μ] with a hsqrt
+      filter_upwards [eNorm_sqrt_toReal_rnDeriv_rpow_two m μ] with a hsqrt
       calc
         ‖u a * √(m.rnDeriv μ a).toReal‖ₑ ^ (2 : ℝ)
             = ‖u a‖ₑ ^ (2 : ℝ) * ‖√(m.rnDeriv μ a).toReal‖ₑ ^ (2 : ℝ) := by
-          rw [enorm_mul, ENNReal.mul_rpow_of_nonneg _ _ (by norm_num : (0 : ℝ) ≤ 2)]
+          rw [eNorm_mul, ENNReal.mul_rpow_of_nonneg _ _ (by norm_num : (0 : ℝ) ≤ 2)]
         _ = ‖u a‖ₑ ^ (2 : ℝ) * m.rnDeriv μ a := by rw [hsqrt]
         _ = m.rnDeriv μ a * ‖u a‖ₑ ^ (2 : ℝ) := by rw [mul_comm]
     _ = ∫⁻ a, ‖u a‖ₑ ^ (2 : ℝ) ∂(μ.withDensity (m.rnDeriv μ)) := by
@@ -142,21 +142,21 @@ private lemma Lp.lintegral_enorm_mul_sqrt_rnDeriv_rpow_two {Ω : Type*} {mΩ : M
 private lemma Lp.eLpNorm_mul_sqrt_rnDeriv {Ω : Type*} {mΩ : MeasurableSpace Ω} {m μ : Measure Ω}
     [SigmaFinite m] [m.HaveLebesgueDecomposition μ] (hm : m ≪ μ) (u : Ω →₂[m] ℝ) :
     eLpNorm (fun ω => u ω * √(m.rnDeriv μ ω).toReal) 2 μ = eLpNorm u 2 m := by
-  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simp) (by simp) (by fun_prop),
-    eLpNorm_eq_lintegral_rpow_enorm_toReal (by simp) (by simp) (by fun_prop)]
+  rw [eLpNorm_eq_lintegral_rpow_eNorm_toReal (by simp) (by simp) (by fun_prop),
+    eLpNorm_eq_lintegral_rpow_eNorm_toReal (by simp) (by simp) (by fun_prop)]
   simpa using congrArg (fun x => x ^ (1 / ENNReal.toReal (2 : ℝ≥0∞)))
-    (Lp.lintegral_enorm_mul_sqrt_rnDeriv_rpow_two hm u)
+    (Lp.lintegral_eNorm_mul_sqrt_rnDeriv_rpow_two hm u)
 
 /-- The square root of a Radon-Nikodym derivative of a finite measure is in `L²`. -/
 private lemma memLp_sqrt_rnDeriv {Ω : Type*} {mΩ : MeasurableSpace Ω} (m μ : Measure Ω)
     [IsFiniteMeasure m] :
     MemLp (fun ω => √(m.rnDeriv μ ω).toReal) 2 μ := by
-  rw [memLp_iff, eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top
+  rw [memLp_iff, eLpNorm_lt_top_iff_lintegral_rpow_eNorm_lt_top
     (by simp) (by simp)
     ((Measure.measurable_rnDeriv _ _).aemeasurable.ennreal_toReal.sqrt).aestronglyMeasurable]
   calc
     ∫⁻ a, ‖√(m.rnDeriv μ a).toReal‖ₑ ^ (2 : ℝ) ∂μ = ∫⁻ a, m.rnDeriv μ a ∂μ :=
-      lintegral_congr_ae (enorm_sqrt_toReal_rnDeriv_rpow_two m μ)
+      lintegral_congr_ae (eNorm_sqrt_toReal_rnDeriv_rpow_two m μ)
     _ < ∞ := Measure.lintegral_rnDeriv_lt_top m μ
 
 /-- If `u ∈ L²(m)` and `m ≪ μ`, then `u * √(dm/dμ)` belongs to `L²(μ)`. -/

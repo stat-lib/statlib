@@ -131,6 +131,7 @@ import Statlib.ForMathlib.Probability.Kernel.Basic
 import Statlib.ForMathlib.Probability.Kernel.Composition.Lemmas
 import Statlib.ForMathlib.Probability.Kernel.Composition.MeasureCompProd
 import Statlib.ForMathlib.Probability.Kernel.Composition.RadonNikodym
+import Statlib.ForMathlib.Probability.Kernel.MeasurableSpace
 import Statlib.ForMathlib.Probability.Kernel.Posterior
 import Statlib.ForMathlib.Probability.Moments.Variance
 import Statlib.ForMathlib.Probability.Process.Filtration

@@ -276,7 +276,7 @@ lemma toReal_statInfo_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure μ
   · rw [abs_of_nonpos]
     swap
     · refine sub_nonpos.mpr <| (ENNReal.toReal_le_toReal ?_ ?_).mpr h
-        <;> try simp only [ne_eq, measure_ne_top _ _, not_false_eq_true, ENNReal.mul_ne_top]
+        <;> simp only [ne_eq, measure_ne_top _ _, not_false_eq_true, ENNReal.mul_ne_top]
     simp_rw [toReal_statInfo_eq_integral_max_of_le h, sup_eq_half_smul_add_add_abs_sub' ℝ,
       smul_eq_mul, zero_add, sub_zero, integral_const_mul]
     calc
@@ -300,7 +300,7 @@ lemma toReal_statInfo_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure μ
   · rw [abs_of_nonneg]
     swap
     · refine sub_nonneg.mpr <| (ENNReal.toReal_le_toReal ?_ ?_).mpr h
-        <;> try simp only [ne_eq, measure_ne_top _ _, not_false_eq_true, ENNReal.mul_ne_top]
+        <;> simp only [ne_eq, measure_ne_top _ _, not_false_eq_true, ENNReal.mul_ne_top]
     simp_rw [toReal_statInfo_eq_integral_max_of_ge h, sup_eq_half_smul_add_add_abs_sub' ℝ,
       smul_eq_mul, zero_add, sub_zero, integral_const_mul]
     calc

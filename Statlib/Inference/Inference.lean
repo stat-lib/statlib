@@ -7,6 +7,7 @@ Authors: Yongxi Lin
 module
 
 public import Mathlib.Probability.Kernel.Defs
+public import Statlib.ForMathlib.Probability.Kernel.MeasurableSpace
 
 /-!
 # Statistical Inference
@@ -81,8 +82,8 @@ def HasRateOfConvergence (l : Filter ι) (I : InferenceModelofMeasure ι Ω S X 
 
 end InferenceModelofMeasure
 
--- In this section, we define a measurable space structure on the space of kernels and a canonical
--- map from the space of measures to the space of kernels.
+-- In this section, we define a canonical map from the space of measures to the space of kernels,
+-- which is measurable (for the σ-algebra `instMeasurableSpaceKernel` on kernels).
 
 namespace ProbabilityTheory
 
@@ -92,7 +93,7 @@ namespace Kernel
 def of_measure (θ Ω : Type*) [MeasurableSpace θ]
     [mΩ : MeasurableSpace Ω] (μ : Measure Ω) : Kernel θ Ω where
   toFun := fun _ => μ
-  measurable' := measurable_const
+  measurable' := _root_.measurable_const
 
 theorem injective_kernel_of_measure (θ Ω : Type*) [MeasurableSpace θ]
     [hθ : Nonempty θ] [mΩ : MeasurableSpace Ω] : Function.Injective (of_measure θ Ω) := by
@@ -100,38 +101,9 @@ theorem injective_kernel_of_measure (θ Ω : Type*) [MeasurableSpace θ]
   simp_all only [of_measure, mk.injEq]
   exact congr_fun hμν Classical.ofNonempty
 
-instance instMeasurableSpaceKernel (θ Ω : Type*) [MeasurableSpace θ] [MeasurableSpace Ω] :
-    MeasurableSpace (Kernel θ Ω) :=
-  ⨆ (t : θ), Measure.instMeasurableSpace.comap fun κ => κ t
-
-theorem measurable_eval {θ Ω : Type*} [MeasurableSpace θ]
-    [MeasurableSpace Ω] (t : θ) :
-    Measurable fun κ : Kernel θ Ω => κ t :=
-  Measurable.of_comap_le <| le_iSup_of_le t <| le_rfl
-
-theorem measurable_eval' {θ Ω : Type*} [MeasurableSpace θ]
-    [MeasurableSpace Ω] (t : θ) {s : Set Ω} (hs : MeasurableSet s) :
-    Measurable fun κ : Kernel θ Ω => κ t s :=
-  (Measure.measurable_coe hs).comp (measurable_eval t)
-
-theorem measurable_of_measurable_eval {α θ Ω : Type*} [MeasurableSpace α]
-    [MeasurableSpace θ] [MeasurableSpace Ω] (κ : α → Kernel θ Ω)
-    (hκ : ∀ t, Measurable fun a => κ a t) :
-    Measurable κ := by
-  simp only [measurable_iff_comap_le, instMeasurableSpaceKernel, MeasurableSpace.comap_iSup,
-    MeasurableSpace.comap_comp]
-  exact iSup_le fun t => (hκ t).comap_le
-
-/-- A function into the space of kernels is measurable iff all its evaluation maps are
-measurable. -/
-theorem measurable_iff {α θ Ω : Type*} [MeasurableSpace α]
-    [MeasurableSpace θ] [MeasurableSpace Ω] {κ : α → Kernel θ Ω} :
-    Measurable κ ↔ ∀ t, Measurable fun a => κ a t :=
-  ⟨fun hκ t => (measurable_eval t).comp hκ, measurable_of_measurable_eval κ⟩
-
 theorem measurable_kernel_of_measure (θ Ω : Type*) [MeasurableSpace θ]
     [mΩ : MeasurableSpace Ω] : Measurable (of_measure θ Ω) :=
-  measurable_iff.2 fun _ => measurable_id
+  (measurable_kernel_iff _).2 fun _ => measurable_id
 
 /-- The inverse of the range factorization of the constant-kernel map. -/
 noncomputable def inv_rangeFactorization_of_measure (θ Ω : Type*)

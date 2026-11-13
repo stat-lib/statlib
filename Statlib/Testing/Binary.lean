@@ -449,7 +449,7 @@ lemma toReal_bayesBinaryRisk_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMea
         (measure_ne_top _ _)) (ENNReal.mul_ne_top (measure_ne_top _ _) (measure_ne_top _ _)),
         ENNReal.toReal_mul]
 
-lemma bayesBinaryRisk_eq_lintegral_enorm (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
+lemma bayesBinaryRisk_eq_lintegral_eNorm (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] (π : Measure Bool) [IsFiniteMeasure π] :
     bayesBinaryRisk μ ν π = 2⁻¹ * (((Kernel.boolKernel μ ν ∘ₘ π) .univ)
         - ∫⁻ x, ‖(π {false} * (∂μ/∂(Kernel.boolKernel μ ν ∘ₘ π)) x).toReal
@@ -464,6 +464,6 @@ lemma bayesBinaryRisk_eq_lintegral_enorm (μ ν : Measure 𝒳) [IsFiniteMeasure
   · simp_rw [ENNReal.toReal_mul]
     exact ((Measure.integrable_toReal_rnDeriv.const_mul _).sub
       (Measure.integrable_toReal_rnDeriv.const_mul _)).abs
-  simp_rw [Real.enorm_eq_ofReal_abs]
+  simp_rw [Real.eNorm_eq_ofReal_abs]
 
 end ProbabilityTheory
