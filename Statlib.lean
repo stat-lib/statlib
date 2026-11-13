@@ -1,5 +1,6 @@
 import Statlib.Causal.PotentialResponse
 import Statlib.Contiguity.Def
+import Statlib.Divergence.AlphaBetaLeakage.Basic
 import Statlib.Divergence.BretagnolleHuber
 import Statlib.Divergence.Chernoff
 import Statlib.Divergence.Chernoff.Prod
