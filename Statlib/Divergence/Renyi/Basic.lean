@@ -684,8 +684,8 @@ lemma renyiDiv_smul_left (ha_nonneg : 0 ≤ a) [IsFiniteMeasure μ] [IsFiniteMea
     have h_set : ν {x | 0 < (∂(c • μ)/∂ν) x} = ν {x | 0 < (∂μ/∂ν) x} := by
       refine measure_congr ?_
       filter_upwards [Measure.rnDeriv_smul_left' μ ν c] with x hx
-      show (0 < (∂(c • μ)/∂ν) x) = (0 < (∂μ/∂ν) x)
-      rw [hx, Pi.smul_apply, ENNReal.smul_def, smul_eq_mul, eq_iff_iff, ENNReal.mul_pos_iff,
+      show 0 < (∂(c • μ)/∂ν) x ↔ 0 < (∂μ/∂ν) x
+      rw [hx, Pi.smul_apply, ENNReal.smul_def, smul_eq_mul, ENNReal.mul_pos_iff,
         ENNReal.coe_pos]
       exact ⟨fun h ↦ h.2, fun h ↦ ⟨pos_iff_ne_zero.mpr hc, h⟩⟩
     rw [renyiDiv_zero, renyiDiv_zero, h_set]
@@ -748,8 +748,8 @@ lemma renyiDiv_smul_right (ha_nonneg : 0 ≤ a) [IsFiniteMeasure μ] [IsFiniteMe
       congr 1
       refine measure_congr ?_
       filter_upwards [Measure.rnDeriv_smul_right' μ ν hc] with x hx
-      show (0 < (∂μ/∂(c • ν)) x) = (0 < (∂μ/∂ν) x)
-      rw [hx, Pi.smul_apply, ENNReal.smul_def, smul_eq_mul, eq_iff_iff, ENNReal.mul_pos_iff,
+      show 0 < (∂μ/∂(c • ν)) x ↔ 0 < (∂μ/∂ν) x
+      rw [hx, Pi.smul_apply, ENNReal.smul_def, smul_eq_mul, ENNReal.mul_pos_iff,
         ENNReal.coe_pos]
       exact ⟨fun h ↦ h.2, fun h ↦ ⟨pos_iff_ne_zero.mpr (inv_ne_zero hc), h⟩⟩
     rw [renyiDiv_zero, renyiDiv_zero, h_set, Measure.coe_nnreal_smul_apply,

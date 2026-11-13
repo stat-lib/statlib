@@ -224,7 +224,7 @@ lemma tvDivFun_apply_top : tvDivFun ∞ = ∞ := by
 `x ↦ |1 - x|`. -/
 lemma fDiv_tvDivFun (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     fDiv tvDivFun μ ν = etvDist μ ν := by
-  rw [fDiv, derivAtTop_tvDivFun, one_mul, etvDist_eq_lintegral_enorm_rnDeriv_add_singularPart]
+  rw [fDiv, derivAtTop_tvDivFun, one_mul, etvDist_eq_lintegral_eNorm_rnDeriv_add_singularPart]
   congr 1
   refine lintegral_congr_ae ?_
   filter_upwards [μ.rnDeriv_ne_top ν] with x hx

@@ -87,12 +87,12 @@ lemma integrable_sum_Iic_of_summable (hX : ∀ n, IntegrableOn (X n) {ω | n ≤
     rw [Set.indicator_of_notMem]
     simpa using hn
   · calc ∫⁻ ω, ‖∑' n, F n ω‖ₑ ∂P
-    _ ≤ ∫⁻ ω, ∑' n, ‖F n ω‖ₑ ∂P := lintegral_mono fun ω ↦ enorm_tsum_le_tsum_enorm
+    _ ≤ ∫⁻ ω, ∑' n, ‖F n ω‖ₑ ∂P := lintegral_mono fun ω ↦ eNorm_tsum_le_tsum_eNorm
     _ = ∑' n, ∫⁻ ω, ‖F n ω‖ₑ ∂P :=
-      lintegral_tsum fun n ↦ (hF_int n).1.enorm
+      lintegral_tsum fun n ↦ (hF_int n).1.eNorm
     _ = ∑' n, ENNReal.ofReal (∫ ω, ‖F n ω‖ ∂P) := by
       congr with n
-      rw [ofReal_integral_norm_eq_lintegral_enorm (hF_int n)]
+      rw [ofReal_integral_norm_eq_lintegral_eNorm (hF_int n)]
     _ = ENNReal.ofReal (∑' n, ∫ ω, ‖F n ω‖ ∂P) :=
       (ENNReal.ofReal_tsum_of_nonneg (fun n ↦ integral_nonneg fun _ ↦ norm_nonneg _) hF_sum).symm
     _ < ∞ := ENNReal.ofReal_lt_top
