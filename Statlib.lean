@@ -143,6 +143,7 @@ import Statlib.Privacy.DP.Exponential
 import Statlib.Privacy.DP.Geometric
 import Statlib.Privacy.DP.Laplace
 import Statlib.Privacy.DP.RandomizedResponse
+import Statlib.Privacy.RenyiDP.Basic
 import Statlib.Testing.Binary
 import Statlib.Testing.BinaryRenyi
 import Statlib.Testing.ChangeMeasure
