@@ -1,5 +1,6 @@
 import Statlib.Causal.PotentialResponse
 import Statlib.Contiguity.Def
+import Statlib.Divergence.AlphaBetaLeakage.Basic
 import Statlib.Divergence.BretagnolleHuber
 import Statlib.Divergence.Chernoff
 import Statlib.Divergence.Chernoff.Prod
@@ -38,6 +39,10 @@ import Statlib.Divergence.KullbackLeibler.CondKL
 import Statlib.Divergence.KullbackLeibler.Estimation
 import Statlib.Divergence.KullbackLeibler.Event
 import Statlib.Divergence.KullbackLeibler.KLDivFun
+import Statlib.Divergence.MaximalLeakage.Basic
+import Statlib.Divergence.MaximalLeakage.MutualInfo
+import Statlib.Divergence.MaximalLeakage.Operational
+import Statlib.Divergence.MaximalLeakage.Properties
 import Statlib.Divergence.MutualInformation.Basic
 import Statlib.Divergence.MutualInformation.Bool
 import Statlib.Divergence.MutualInformation.Estimation
