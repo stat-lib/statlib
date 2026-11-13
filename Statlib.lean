@@ -138,6 +138,7 @@ import Statlib.ForMathlib.Probability.StrongLaw
 import Statlib.ForMathlib.Topology.Order.MonotoneConvergence
 import Statlib.Inference.Inference
 import Statlib.Inference.QMD
+import Statlib.Privacy.AdvancedComposition.Basic
 import Statlib.Privacy.DP.Basic
 import Statlib.Privacy.DP.Exponential
 import Statlib.Privacy.DP.Geometric
