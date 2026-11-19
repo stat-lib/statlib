@@ -15,8 +15,8 @@ We prove that a class of e-variables `𝓔` (an `IsEVarClass`) has a numeraire u
 `P`, for every bounded utility function and for the logarithmic utility.
 
 The proof uses only that the class consists of measurable functions, contains `1`, is convex and
-is closed under `liminf` of sequences (`IsEVarClass`). The e-variables for a set of finite measures
-are an example (`isEVarClass_isEVar`).
+is closed under `liminf` of sequences (`IsEVarClass`). The e-variables for a set of measures of mass
+at most one are an example (`isEVarClass_isEVar`).
 
 The steps are:
 
@@ -43,7 +43,8 @@ The Komlós-type lemma is `MeasureTheory.komlos_ennreal`.
 
 * `IsEVarClass.exists_isNumeraireFor`: existence of the numeraire for a bounded utility.
 * `IsEVarClass.exists_isLogNumeraireFor`: existence of the numeraire for the logarithmic utility.
-* `exists_isNumeraire`: existence of the numeraire of the e-variables for a set of finite measures.
+* `exists_isNumeraire`: existence of the numeraire of the e-variables for a set of measures of mass
+  at most one.
 * `isLogNumeraireFor_logNumeraire`, `isNumeraire_numeraire`: `logNumeraire P 𝓔` and
   `numeraire P S` are numeraires.
 
@@ -859,59 +860,66 @@ lemma IsLogNumeraireFor.ae_eq_logNumeraire [IsFiniteMeasure P] (h𝓔 : IsEVarCl
 
 /-! ### The numeraire of the e-variables for a set of measures -/
 
-/-- **Existence of the numeraire** of the e-variables for a set of finite measures. -/
+/-- **Existence of the numeraire** of the e-variables for a set of measures of mass at most one. -/
 theorem exists_isNumeraire (P : Measure 𝓧) [IsFiniteMeasure P]
-    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     ∃ X, IsNumeraire X S P :=
   (isEVarClass_isEVar S hS).exists_isLogNumeraireFor P
 
-/-- The numeraire of the e-variables for `S`, under `P` (see `isNumeraire_numeraire`). -/
+/-- The numeraire of the e-variables for `S`, under `P` (see `isNumeraire_numeraire`). It is defined
+as `1` if `P` is not a finite measure or if the constant `1` is not an e-variable for `S`, that is
+if a measure of `S` has mass greater than one. -/
 noncomputable
 def numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) : 𝓧 → ℝ≥0∞ :=
   logNumeraire P {X | IsEVar X S}
 
-lemma isEVar_numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
+lemma isEVar_numeraire (P : Measure 𝓧) (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     IsEVar (numeraire P S) S :=
-  logNumeraire_mem (𝓔 := {X | IsEVar X S}) P (isEVar_one S)
+  logNumeraire_mem (𝓔 := {X | IsEVar X S}) P (isEVar_one hS)
 
 @[fun_prop]
 lemma measurable_numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
-    Measurable (numeraire P S) := (isEVar_numeraire P S).measurable
+    Measurable (numeraire P S) := by
+  unfold numeraire logNumeraire
+  split_ifs with h
+  · have := h.2
+    exact h.1.measurable (h.1.exists_isLogNumeraireFor P).choose_spec.mem
+  · exact measurable_one
 
 /-- The numeraire `numeraire P S` is indeed a numeraire for `S` and `P`. -/
 lemma isNumeraire_numeraire (P : Measure 𝓧) [IsFiniteMeasure P]
-    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     IsNumeraire (numeraire P S) S P :=
   isLogNumeraireFor_logNumeraire (isEVarClass_isEVar S hS) P
 
 /-- The numeraire `numeraire P S` attains the maximum logarithmic utility. -/
 lemma maxUtility_eq_eintegral_numeraire (P : Measure 𝓧) [IsFiniteMeasure P]
-    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P :=
   (isNumeraire_numeraire P hS).maxUtility_eq_eintegral
 
-lemma lintegral_div_numeraire_le (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+lemma lintegral_div_numeraire_le (P : Measure 𝓧) (hS : ∀ μ ∈ S, μ Set.univ ≤ 1)
     (hX : IsEVar X S) :
     ∫⁻ x, X x / numeraire P S x ∂P ≤ ∫⁻ x, numeraire P S x / numeraire P S x ∂P :=
   lintegral_div_logNumeraire_le P (isEVarClass_isEVar S hS) hX
 
-lemma lintegral_div_numeraire_le_measure_univ (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+lemma lintegral_div_numeraire_le_measure_univ (P : Measure 𝓧) (hS : ∀ μ ∈ S, μ Set.univ ≤ 1)
     (hX : IsEVar X S) :
     ∫⁻ x, X x / numeraire P S x ∂P ≤ P .univ :=
   lintegral_div_logNumeraire_le_measure_univ P (isEVarClass_isEVar S hS) hX
 
 lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (hX : IsEVar X S) :
+    (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) (hX : IsEVar X S) :
     ∫⁻ x, X x / numeraire P S x ∂P ≤ 1 :=
   (isNumeraire_numeraire P hS).lintegral_div_le_one hX
 
-lemma IsNumeraire.ae_eq_numeraire [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+lemma IsNumeraire.ae_eq_numeraire [IsFiniteMeasure P] (hS : ∀ μ ∈ S, μ Set.univ ≤ 1)
     (hX : IsNumeraire X S P) :
     X =ᵐ[P] numeraire P S :=
   hX.ae_unique (isNumeraire_numeraire P hS)
 
-lemma eintegrable_log_numeraire [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+lemma eintegrable_log_numeraire [IsFiniteMeasure P] (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     EIntegrable (fun x ↦ ENNReal.log (numeraire P S x)) P :=
-  (isNumeraire_numeraire P hS).eintegrable_log
+  (isNumeraire_numeraire P hS).eintegrable_log hS
 
 end ProbabilityTheory

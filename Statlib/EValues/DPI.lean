@@ -98,15 +98,11 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     rintro y ⟨η, hη₁, hη₂, hy⟩
     obtain ⟨X, hX, h_le⟩ : ∃ X, IsEVar X S ∧ y ≤ ∫ᵉ x, (U ∘ X) x ∂P := by
       let X := fun x ↦ ∫⁻ y, y ∂(η x)
-      refine ⟨X, ⟨by fun_prop, fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩, ?_⟩
-      · rw [isRandEVar_iff_isEVar] at hη₂
-        exact hη₂.eintegral_ne_bot μ hμ
-      · rw [isRandEVar_iff_isEVar] at hη₂
-        exact hη₂.eintegral_nonpos μ hμ
-      · rw [hy]
-        refine (eintegral_comp_measure_le U.measurable.aemeasurable).trans ?_
-        refine eintegral_mono fun _ ↦ ?_
-        exact U.eintegral_le_map (by fun_prop)
+      refine ⟨X, isRandEVar_iff_isEVar.mp hη₂, ?_⟩
+      rw [hy]
+      refine (eintegral_comp_measure_le U.measurable.aemeasurable).trans ?_
+      refine eintegral_mono fun _ ↦ ?_
+      exact U.eintegral_le_map (by fun_prop)
     trans ∫ᵉ x, (U ∘ X) x ∂P
     · exact h_le
     · rw [maxUtility_eq_sSup]
@@ -115,14 +111,10 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
   · rw [maxRandUtility_eq_sSup, maxUtility_eq_sSup]
     refine sSup_le_sSup ?_
     rintro y ⟨X, hX, hy⟩
-    refine ⟨Kernel.deterministic X hX.measurable, inferInstance, ⟨fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩, ?_⟩
-    · simp only [Kernel.lintegral_deterministic]
-      exact hX.eintegral_ne_bot μ hμ
-    · simp only [Kernel.lintegral_deterministic]
-      exact hX.eintegral_nonpos μ hμ
-    · rw [hy, Measure.deterministic_comp_eq_map hX.measurable,
-        eintegral_map U.measurable hX.measurable]
-      rfl
+    refine ⟨Kernel.deterministic X hX.measurable, inferInstance, hX.isRandEVar_deterministic, ?_⟩
+    rw [hy, Measure.deterministic_comp_eq_map hX.measurable,
+      eintegral_map U.measurable hX.measurable]
+    rfl
 
 /-- **Data Processing Inequality** for randomized utility a Markov kernel. -/
 lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
@@ -168,12 +160,13 @@ lemma _root_.MeasurableEmbedding.maxUtility_map_eq [Nonempty 𝓧] (φ : 𝓧 �
   conv_lhs => rw [hP_eq, hS_eq]
   exact maxUtility_map_le (P.map φ) hφ.measurable_invFun
 
-/-- The maximum log utility is nonnegative. -/
-lemma maxUtility_nonneg (P : Measure 𝓧) :
+/-- The maximum log utility for a set of measures of mass at most one is nonnegative: the
+constant `1` is then an e-variable. -/
+lemma maxUtility_nonneg (P : Measure 𝓧) (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     0 ≤ maxUtility P S logUtility := by
   calc 0
   _ ≤ ∫ᵉ x, (logUtility ∘ (fun _ ↦ 1)) x ∂P := by simp [logUtility]
-  _ ≤ maxUtility P S logUtility := (isEVar_fun_one S).eintegral_le_maxUtility P logUtility
+  _ ≤ maxUtility P S logUtility := (isEVar_fun_one hS).eintegral_le_maxUtility P logUtility
 
 /-- The maximum utility is a convex function of the measure. -/
 lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :

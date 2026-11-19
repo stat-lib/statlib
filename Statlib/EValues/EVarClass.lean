@@ -28,8 +28,8 @@ such as adaptedness.
 
 ## Main statements
 
-* `isEVarClass_isEVar`: the e-variables for a set of finite measures form an `IsEVarClass`. The
-  results proved for a class thus apply to e-variables.
+* `isEVarClass_isEVar`: the e-variables for a set of measures of mass at most one form an
+  `IsEVarClass`. The results proved for a class thus apply to e-variables.
 * `IsEVarClass.inter`: the intersection of a class with a convex, `liminf`-closed set containing `1`
   is again a class.
 * `IsEVarClass.exists_forall_ae_eq_top`: for an s-finite measure `P`, some element of the class is
@@ -51,7 +51,8 @@ variable {𝓧 : Type*} [MeasurableSpace 𝓧] {P : Measure 𝓧} {S : Set (Meas
 of the numeraire uses: it consists of measurable functions, contains the constant `1`, is convex,
 and is closed under `liminf` of sequences.
 
-The class of e-variables for a set of finite measures is an example (`isEVarClass_isEVar`). -/
+The class of e-variables for a set of measures of mass at most one is an example
+(`isEVarClass_isEVar`). -/
 structure IsEVarClass (𝓔 : Set (𝓧 → ℝ≥0∞)) : Prop where
   measurable ⦃X⦄ (hX : X ∈ 𝓔) : Measurable X
   one_mem : 1 ∈ 𝓔
@@ -60,13 +61,14 @@ structure IsEVarClass (𝓔 : Set (𝓧 → ℝ≥0∞)) : Prop where
 
 lemma IsEVarClass.nonempty (h𝓔 : IsEVarClass 𝓔) : 𝓔.Nonempty := ⟨1, h𝓔.one_mem⟩
 
-/-- The e-variables for a set of finite measures form an `IsEVarClass`. -/
-lemma isEVarClass_isEVar (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+/-- The e-variables for a set of measures of mass at most one form an `IsEVarClass`. The bound on
+the masses is what makes the constant `1` an e-variable (`isEVar_one_iff`). -/
+lemma isEVarClass_isEVar (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     IsEVarClass {X | IsEVar X S} where
   measurable _ hX := hX.measurable
-  one_mem := isEVar_one S
+  one_mem := isEVar_one hS
   convex := convex_isEVar S
-  liminf_mem _ hX := isEVar_liminf hX hS
+  liminf_mem _ hX := isEVar_liminf hX
 
 /-- Adding a constraint: the intersection of a class with a convex, `liminf`-closed set containing
 `1` is again a class. -/
