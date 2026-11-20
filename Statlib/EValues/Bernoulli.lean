@@ -92,10 +92,8 @@ lemma isEVar_bernoulli_iff :
       X false ≤ 1 ∧ ENNReal.ofReal δ * X true + ENNReal.ofReal (1 - δ) * X false ≤ 1 := by
   have h_iff : IsEVar X {Ber(true, false, q) | (q : I) (_ : (q : ℝ) ≤ δ)} ↔ ∀ q : I, (q : ℝ) ≤ δ →
       ENNReal.ofReal q * X true + ENNReal.ofReal (1 - q) * X false ≤ 1 := by
-    refine ⟨fun hX q hq ↦ ?_, fun h ↦ .of_lintegral_le_measure_univ ?_ (.of_discrete) ?_⟩
-    · simpa [lintegral_bernoulliMeasure] using hX.lintegral_le_measure_univ _ ⟨q, hq, rfl⟩
-    · rintro _ ⟨q, hq, rfl⟩
-      infer_instance
+    refine ⟨fun hX q hq ↦ ?_, fun h ↦ ⟨.of_discrete, ?_⟩⟩
+    · simpa [lintegral_bernoulliMeasure] using hX.lintegral_le_one ⟨q, hq, rfl⟩
     · rintro _ ⟨q, hq, rfl⟩
       simpa [lintegral_bernoulliMeasure] using h q hq
   rw [h_iff]
@@ -168,8 +166,8 @@ theorem isNumeraire_bernoulli {p : I} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) (hδp
   refine isNumeraire_of_lintegral_div_le hX (by simp [h_fsupport]) fun Y hY ↦ ?_
   -- the expectation of `Y / X` under `Ber(true, false, p)` is at most that of `Y` under
   -- `Ber(true, false, δ)`
-  have hYδ := hY.lintegral_le_measure_univ Ber(true, false, δ) ⟨δ, le_rfl, rfl⟩
-  rw [lintegral_bernoulliMeasure, measure_univ] at hYδ
+  have hYδ := hY.lintegral_le_one ⟨δ, le_rfl, rfl⟩
+  rw [lintegral_bernoulliMeasure] at hYδ
   rw [h_fsupport, lintegral_bernoulliMeasure]
   refine le_trans ?_ hYδ
   simp only [X, ↓reduceIte, Bool.false_eq_true]

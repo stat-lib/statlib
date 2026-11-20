@@ -36,6 +36,8 @@ over the effective set.
 
 ## Main statements
 
+* `subset_effectiveSet`, `isEVar_effectiveSet_iff`, `effectiveSet_effectiveSet`: a set of measures
+  is contained in its effective set, which has the same e-variables and is its own effective set.
 * `ripr_mem_effectiveSet`: the reverse information projection is in the effective set.
 * `maxUtility_eq_klIntegral_ripr`: `maxUtility P S logUtility = klIntegral P (ripr P S)`.
 * `maxUtility_eq_iInf_klIntegral_effectiveSet`:
@@ -70,17 +72,17 @@ def ripr (P : Measure 𝓧) (S : Set (Measure 𝓧)) : Measure 𝓧 :=
 lemma ripr_univ (P : Measure 𝓧) : ripr P S .univ = ∫⁻ x, (numeraire P S x)⁻¹ ∂P := by
   rw [ripr, withDensity_apply _ .univ, setLIntegral_univ]
 
-lemma ripr_univ_le_measure_fsupport (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+lemma ripr_univ_le_measure_fsupport (P : Measure 𝓧) (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     ripr P S .univ ≤ P (numeraire P S).fsupport := by
   rw [ripr_univ]
   simpa [numeraire] using
-    lintegral_div_logNumeraire_le_measure_fsupport P (isEVarClass_isEVar S hS) (isEVar_one S)
+    lintegral_div_logNumeraire_le_measure_fsupport P (isEVarClass_isEVar S hS) (isEVar_one hS)
 
 lemma ripr_univ_le_measure_univ (P : Measure 𝓧) :
     ripr P S .univ ≤ P .univ := by
   rw [ripr_univ]
   by_cases h𝓔 : IsEVarClass {X | IsEVar X S}
-  · simpa [numeraire] using lintegral_div_logNumeraire_le_measure_univ P h𝓔 (isEVar_one S)
+  · simpa [numeraire] using lintegral_div_logNumeraire_le_measure_univ P h𝓔 h𝓔.one_mem
   · have h_one : numeraire P S = 1 := by
       unfold numeraire logNumeraire
       split_ifs with h
@@ -105,26 +107,26 @@ lemma absolutelyContinuous_ripr_of_ae_ne_top (h_top : ∀ᵐ x ∂P, numeraire P
 
 /-- If the numeraire is almost everywhere finite, it is the density of `P` with respect to the
 reverse information projection. -/
-lemma rnDeriv_ripr [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+lemma rnDeriv_ripr [IsFiniteMeasure P] (hS : ∀ μ ∈ S, μ Set.univ ≤ 1)
     (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤) :
     P.rnDeriv (ripr P S) =ᵐ[P] numeraire P S := by
   refine (Measure.rnDeriv_withDensity_right _ _ (by fun_prop) ?_ ?_).trans ?_
   · simpa
   · simp only [ne_eq, ENNReal.inv_eq_top]
-    exact (isNumeraire_numeraire P hS).ae_ne_zero
+    exact (isNumeraire_numeraire P hS).ae_ne_zero hS
   simp only [inv_inv]
   filter_upwards [Measure.rnDeriv_self P] with x hx using by simp [hx]
 
-lemma llr_ripr [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+lemma llr_ripr [IsFiniteMeasure P] (hS : ∀ μ ∈ S, μ Set.univ ≤ 1)
     (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤) :
     llr P (ripr P S) =ᵐ[P] fun x ↦ Real.log (numeraire P S x).toReal := by
   unfold llr
   filter_upwards [rnDeriv_ripr hS h_top] with x hx using by simp [hx]
 
-lemma llr_ripr' [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+lemma llr_ripr' [IsFiniteMeasure P] (hS : ∀ μ ∈ S, μ Set.univ ≤ 1)
     (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤) :
     llr P (ripr P S) =ᵐ[P] fun x ↦ (ENNReal.log (numeraire P S x)).toReal := by
-  have h_ne_zero := (isNumeraire_numeraire P hS).ae_ne_zero
+  have h_ne_zero := (isNumeraire_numeraire P hS).ae_ne_zero hS
   filter_upwards [h_ne_zero, h_top, llr_ripr hS h_top] with x hx1 hx2
   unfold ENNReal.log
   simp [hx1, hx2]
@@ -163,32 +165,32 @@ lemma klIntegral_eq_klDiv {μ ν : Measure 𝓧} [IsFiniteMeasure μ] [IsFiniteM
     measureReal_def, measureReal_def, h_eq, add_sub_cancel_right, EReal.coe_ennreal_ofReal,
     max_eq_left h_nonneg]
 
-lemma eintegral_log_numeraire_eq_integral [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+lemma eintegral_log_numeraire_eq_integral [IsFiniteMeasure P] (hS : ∀ μ ∈ S, μ Set.univ ≤ 1)
     (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤)
     (h_int : ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P ≠ ⊤) :
     ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P = ∫ x, Real.log (numeraire P S x).toReal ∂P := by
-  rw [eintegral_eq_integral_toReal (by fun_prop) (isNumeraire_numeraire P hS).eintegral_log_ne_bot
-    h_int]
+  rw [eintegral_eq_integral_toReal (by fun_prop)
+    ((isNumeraire_numeraire P hS).eintegral_log_ne_bot hS) h_int]
   congr 1
   refine integral_congr_ae ?_
-  have h_ne_zero := (isNumeraire_numeraire P hS).ae_ne_zero
+  have h_ne_zero := (isNumeraire_numeraire P hS).ae_ne_zero hS
   filter_upwards [h_ne_zero, h_top] with x hx1 hx2
   unfold ENNReal.log
   simp [hx1, hx2]
 
 lemma integrable_llr_ripr_iff [IsFiniteMeasure P]
-    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤) :
+    (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤) :
     Integrable (llr P (ripr P S)) P ↔ ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P ≠ ⊤ := by
   rw [integrable_congr (llr_ripr' hS h_top),
     integrable_toReal_iff_eintegral_ne_bot_and_ne_top (by fun_prop)]
-  · simp [(isNumeraire_numeraire P hS).eintegral_log_ne_bot]
+  · simp [(isNumeraire_numeraire P hS).eintegral_log_ne_bot hS]
   · simp only [ne_eq, ENNReal.log_eq_bot_iff]
-    exact (isNumeraire_numeraire P hS).ae_ne_zero
+    exact (isNumeraire_numeraire P hS).ae_ne_zero hS
   · simpa
 
 /-- The maximal logarithmic utility is the Kullback-Leibler divergence between `P` and its reverse
 information projection. -/
-lemma maxUtility_eq_klIntegral_ripr [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+lemma maxUtility_eq_klIntegral_ripr [IsFiniteMeasure P] (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     maxUtility P S logUtility = klIntegral P (ripr P S) := by
   rw [maxUtility_eq_eintegral_numeraire _ hS]
   by_cases h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤
@@ -200,7 +202,7 @@ lemma maxUtility_eq_klIntegral_ripr [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFi
         h_int
       · rw [eintegral_log_numeraire_eq_integral hS h_top h_int'.2]
       · simp only [ne_eq, ENNReal.log_eq_bot_iff]
-        exact (isNumeraire_numeraire P hS).ae_ne_zero
+        exact (isNumeraire_numeraire P hS).ae_ne_zero hS
       · simpa
     · rw [klIntegral_of_not_integrable h_int]
       rw [integrable_llr_ripr_iff hS h_top] at h_int
@@ -221,29 +223,46 @@ lemma maxUtility_eq_klIntegral_ripr [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFi
     refine measure_mono_null (fun x hx ↦ ?_) h
     simp [show numeraire P S x = ∞ from hx]
   have h_neg := lintegral_toENNReal_neg_ne_top_of_eintegral_ne_bot
-    (isNumeraire_numeraire P hS).eintegral_log_ne_bot
+    ((isNumeraire_numeraire P hS).eintegral_log_ne_bot hS)
   rw [klIntegral_of_not_ac h_not_ac, eintegral, h_pos, EReal.coe_ennreal_top,
     EReal.top_sub (by simpa using h_neg)]
 
 /-- The effective set of a set of measures `S`: the measures under which the expectation of every
-e-variable for `S` is at most 1. -/
+e-variable for `S` is at most 1. It contains `S` (`subset_effectiveSet`) and has the same
+e-variables as `S` (`isEVar_effectiveSet_iff`): it is the largest such set of measures. -/
 def effectiveSet (S : Set (Measure 𝓧)) : Set (Measure 𝓧) :=
   {μ | ∀ X, IsEVar X S → ∫⁻ ω, X ω ∂μ ≤ 1}
 
 lemma mem_effectiveSet_iff {μ : Measure 𝓧} :
     μ ∈ effectiveSet S ↔ ∀ X, IsEVar X S → ∫⁻ ω, X ω ∂μ ≤ 1 := Iff.rfl
 
-lemma measure_univ_le_one_of_mem_effectiveSet {μ : Measure 𝓧} (hμ : μ ∈ effectiveSet S) :
-    μ .univ ≤ 1 := by
-  simpa using mem_effectiveSet_iff.mp hμ (fun _ ↦ 1) (isEVar_fun_one S)
+/-- A set of measures is contained in its effective set. -/
+lemma subset_effectiveSet : S ⊆ effectiveSet S := fun _ hμ _ hX ↦ hX.lintegral_le_one hμ
 
-lemma isFiniteMeasure_of_mem_effectiveSet {μ : Measure 𝓧} (hμ : μ ∈ effectiveSet S) :
+/-- The e-variables for the effective set of `S` are the e-variables for `S`. -/
+@[simp]
+lemma isEVar_effectiveSet_iff {X : 𝓧 → ℝ≥0∞} : IsEVar X (effectiveSet S) ↔ IsEVar X S :=
+  ⟨fun hX ↦ hX.anti_set subset_effectiveSet, fun hX ↦ ⟨hX.measurable, fun _ hμ ↦ hμ X hX⟩⟩
+
+/-- The effective set of the effective set of `S` is the effective set of `S`. -/
+@[simp]
+lemma effectiveSet_effectiveSet : effectiveSet (effectiveSet S) = effectiveSet S := by
+  ext μ
+  simp_rw [mem_effectiveSet_iff, isEVar_effectiveSet_iff]
+
+lemma measure_univ_le_one_of_mem_effectiveSet (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) {μ : Measure 𝓧}
+    (hμ : μ ∈ effectiveSet S) :
+    μ .univ ≤ 1 := by
+  simpa using mem_effectiveSet_iff.mp hμ (fun _ ↦ 1) (isEVar_fun_one hS)
+
+lemma isFiniteMeasure_of_mem_effectiveSet (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) {μ : Measure 𝓧}
+    (hμ : μ ∈ effectiveSet S) :
     IsFiniteMeasure μ :=
-  ⟨(measure_univ_le_one_of_mem_effectiveSet hμ).trans_lt (by simp)⟩
+  ⟨(measure_univ_le_one_of_mem_effectiveSet hS hμ).trans_lt (by simp)⟩
 
 /-- The reverse information projection belongs to the effective set. -/
 lemma ripr_mem_effectiveSet (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     ripr P S ∈ effectiveSet S := by
   refine mem_effectiveSet_iff.mpr fun X hX ↦ ?_
   unfold ripr
@@ -255,7 +274,6 @@ lemma ripr_mem_effectiveSet (P : Measure 𝓧) [IsProbabilityMeasure P]
 lemma lintegral_mul_le_of_mem_effectiveSet {μ : Measure 𝓧} (hμ : μ ∈ effectiveSet S)
     {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) :
     ∫⁻ ω, X ω * (μ.rnDeriv P) ω ∂P ≤ 1 := by
-  have : IsFiniteMeasure μ := isFiniteMeasure_of_mem_effectiveSet hμ
   simp_rw [mul_comm (X _)]
   calc ∫⁻ ω, (∂μ/∂P) ω * X ω ∂P
   _ ≤ ∫⁻ ω, X ω ∂μ := lintegral_rnDeriv_mul_le μ P hX.measurable
@@ -309,20 +327,20 @@ lemma klIntegral_eq_eintegral_log_inv_rnDeriv {μ : Measure 𝓧} [IsFiniteMeasu
 /-- Weak duality: the maximal logarithmic utility is at most the Kullback-Leibler divergence
 between `P` and any measure of the effective set. -/
 lemma maxUtility_le_klIntegral_of_mem_effectiveSet [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) {μ : Measure 𝓧} (hμ : μ ∈ effectiveSet S) :
+    (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) {μ : Measure 𝓧} (hμ : μ ∈ effectiveSet S) :
     maxUtility P S logUtility ≤ klIntegral P μ := by
   by_cases h_ac : P ≪ μ
   swap; · simp [klIntegral_of_not_ac h_ac]
   by_cases h_int : Integrable (llr P μ) P
   swap; · simp [klIntegral_of_not_integrable h_int]
-  have : IsFiniteMeasure μ := isFiniteMeasure_of_mem_effectiveSet hμ
+  have : IsFiniteMeasure μ := isFiniteMeasure_of_mem_effectiveSet hS hμ
   rw [klIntegral_eq_eintegral_log_inv_rnDeriv h_ac h_int, maxUtility_eq_eintegral_numeraire _ hS]
-  exact eintegral_log_isEVar_le_eintegral_rnDeriv hμ h_ac (isEVar_numeraire P S)
+  exact eintegral_log_isEVar_le_eintegral_rnDeriv hμ h_ac (isEVar_numeraire P hS)
 
 /-- **Duality** between the maximal logarithmic utility over the e-variables and the minimal
 Kullback-Leibler divergence over the effective set. -/
 lemma maxUtility_eq_iInf_klIntegral_effectiveSet [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    (hS : ∀ μ ∈ S, μ Set.univ ≤ 1) :
     maxUtility P S logUtility = ⨅ μ ∈ effectiveSet S, klIntegral P μ :=
   le_antisymm (le_iInf₂ fun _ ↦ maxUtility_le_klIntegral_of_mem_effectiveSet hS)
     ((iInf₂_le (ripr P S) (ripr_mem_effectiveSet P hS)).trans_eq
@@ -336,19 +354,18 @@ expected logarithm. -/
 theorem maxUtility_singleton_eq_klDiv (P Q : Measure 𝓧) [IsProbabilityMeasure P]
     [IsProbabilityMeasure Q] :
     maxUtility P {Q} logUtility = klDiv P Q := by
-  have hQ : ∀ μ ∈ ({Q} : Set (Measure 𝓧)), IsProbabilityMeasure μ := by
+  have hQ : ∀ μ ∈ ({Q} : Set (Measure 𝓧)), μ Set.univ ≤ 1 := by
     rintro μ rfl
-    infer_instance
+    simp
   refine le_antisymm ?_ ?_
   · rw [← klIntegral_eq_klDiv (by simp)]
-    refine maxUtility_le_klIntegral_of_mem_effectiveSet
-      (fun μ hμ ↦ have := hQ μ hμ; inferInstance) fun X hX ↦ ?_
-    simpa using hX.lintegral_le_measure_univ Q rfl
+    exact maxUtility_le_klIntegral_of_mem_effectiveSet hQ
+      (subset_effectiveSet (Set.mem_singleton Q))
   by_cases h_ac : P ≪ Q
   · -- the likelihood ratio `∂P/∂Q` is an e-variable for `{Q}`
-    have hX : IsEVar (P.rnDeriv Q) {Q} := .of_lintegral_le_one hQ (by fun_prop) fun μ hμ ↦ by
+    have hX : IsEVar (P.rnDeriv Q) {Q} := ⟨by fun_prop, fun μ hμ ↦ by
       obtain rfl : μ = Q := hμ
-      exact Measure.lintegral_rnDeriv_le.trans_eq measure_univ
+      exact Measure.lintegral_rnDeriv_le.trans_eq measure_univ⟩
     refine le_of_eq_of_le ?_ (hX.eintegral_le_maxUtility P logUtility)
     rw [coe_klDiv_eq_eintegral_llr_of_measure_eq h_ac (by simp)]
     refine eintegral_congr_ae ?_
@@ -361,12 +378,12 @@ theorem maxUtility_singleton_eq_klDiv (P Q : Measure 𝓧) [IsProbabilityMeasure
     exact h_ac (Measure.AbsolutelyContinuous.mk fun s hs hQs ↦ h s hs hQs)
   classical
   have hX : IsEVar (fun x ↦ if x ∈ s then ∞ else 1) {Q} :=
-    .of_lintegral_le_one hQ (Measurable.ite hs measurable_const measurable_const) fun μ hμ ↦ by
+    ⟨Measurable.ite hs measurable_const measurable_const, fun μ hμ ↦ by
       obtain rfl : μ = Q := hμ
       rw [lintegral_congr_ae (g := fun _ ↦ 1)]
       · simp
       filter_upwards [measure_eq_zero_iff_ae_notMem.mp hQs] with x hx
-      simp [hx]
+      simp [hx]⟩
   rw [klDiv_of_not_ac h_ac, EReal.coe_ennreal_top]
   refine le_of_eq_of_le ?_ (hX.eintegral_le_maxUtility P logUtility)
   rw [eintegral_eq_lintegral_of_nonneg fun x ↦ by

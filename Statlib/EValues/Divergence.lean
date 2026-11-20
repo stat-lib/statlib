@@ -68,8 +68,8 @@ divided by `1 - α`. It is meant for `α ∈ (0, 1)`: for `α ≥ 1`, `1 - α = 
 `erenyiDiv 0 S T = ⨅ R, maxUtility R T logUtility` is `0` as soon as `T` contains a probability
 measure, unlike the Rényi divergence of order `0`.
 
-The maximal logarithmic utilities are nonnegative (`maxUtility_nonneg`), so `EReal.toENNReal` does
-not truncate. -/
+If the measures of `S` and `T` have mass at most one, the maximal logarithmic utilities are
+nonnegative (`maxUtility_nonneg`), so `EReal.toENNReal` does not truncate. -/
 noncomputable
 def erenyiDiv (α : ℝ≥0∞) (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
   (1 - α)⁻¹ * ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
@@ -217,19 +217,23 @@ lemma echernoffDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
 /-! ### Products -/
 
 private lemma toENNReal_maxUtility_add_maxUtility {R₁ : Measure 𝓧} {R₂ : Measure 𝓨}
-    {S : Set (Measure 𝓧)} {T : Set (Measure 𝓨)} :
+    {S : Set (Measure 𝓧)} {T : Set (Measure 𝓨)} (hS : ∀ μ ∈ S, μ Set.univ ≤ 1)
+    (hT : ∀ μ ∈ T, μ Set.univ ≤ 1) :
     (maxUtility R₁ S logUtility + maxUtility R₂ T logUtility).toENNReal
       = (maxUtility R₁ S logUtility).toENNReal + (maxUtility R₂ T logUtility).toENNReal :=
-  EReal.toENNReal_add (maxUtility_nonneg _) (maxUtility_nonneg _)
+  EReal.toENNReal_add (maxUtility_nonneg _ hS) (maxUtility_nonneg _ hT)
 
 /-- The sum of two e-Rényi divergences, as an infimum over pairs of probability measures. -/
-private lemma erenyiDiv_add_eq_iInf (S₁ S₂ : Set (Measure 𝓧)) (T₁ T₂ : Set (Measure 𝓨)) :
+private lemma erenyiDiv_add_eq_iInf {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
+    (hS₁ : ∀ μ ∈ S₁, μ Set.univ ≤ 1) (hS₂ : ∀ μ ∈ S₂, μ Set.univ ≤ 1)
+    (hT₁ : ∀ μ ∈ T₁, μ Set.univ ≤ 1) (hT₂ : ∀ μ ∈ T₂, μ Set.univ ≤ 1) :
     erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ = (1 - α)⁻¹ * ⨅ (R₁ : Measure 𝓧)
       (_ : IsProbabilityMeasure R₁) (R₂ : Measure 𝓨) (_ : IsProbabilityMeasure R₂),
       α * (maxUtility R₁ S₁ logUtility + maxUtility R₂ T₁ logUtility).toENNReal
         + (1 - α) * (maxUtility R₁ S₂ logUtility + maxUtility R₂ T₂ logUtility).toENNReal := by
   rw [erenyiDiv, erenyiDiv, ← mul_add, ENNReal.iInf₂_add]
-  simp_rw [ENNReal.add_iInf₂, toENNReal_maxUtility_add_maxUtility]
+  simp_rw [ENNReal.add_iInf₂, toENNReal_maxUtility_add_maxUtility hS₁ hT₁,
+    toENNReal_maxUtility_add_maxUtility hS₂ hT₂]
   refine congrArg _ (iInf_congr fun R₁ ↦ iInf_congr fun _ ↦ iInf_congr fun R₂ ↦
     iInf_congr fun _ ↦ ?_)
   ring
@@ -237,11 +241,11 @@ private lemma erenyiDiv_add_eq_iInf (S₁ S₂ : Set (Measure 𝓧)) (T₁ T₂ 
 /-- The e-Rényi divergence between sets of product measures is the sum of the e-Rényi
 divergences. -/
 theorem erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
-    (hS₁ : ∀ μ ∈ S₁, IsFiniteMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsFiniteMeasure μ)
-    (hT₁ : ∀ μ ∈ T₁, IsFiniteMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsFiniteMeasure μ) :
+    (hS₁ : ∀ μ ∈ S₁, μ Set.univ ≤ 1) (hS₂ : ∀ μ ∈ S₂, μ Set.univ ≤ 1)
+    (hT₁ : ∀ μ ∈ T₁, μ Set.univ ≤ 1) (hT₂ : ∀ μ ∈ T₂, μ Set.univ ≤ 1) :
     erenyiDiv α (Set.image2 Measure.prod S₁ T₁) (Set.image2 Measure.prod S₂ T₂)
       = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
-  rw [erenyiDiv_add_eq_iInf, erenyiDiv]
+  rw [erenyiDiv_add_eq_iInf hS₁ hS₂ hT₁ hT₂, erenyiDiv]
   congr 1
   refine le_antisymm ?_ ?_
   · -- the product of two probability measures is a probability measure on the product
@@ -257,8 +261,8 @@ theorem erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measur
 /-- The e-Chernoff divergence between sets of product measures is at most the sum of the
 e-Chernoff divergences. -/
 theorem echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
-    (hS₁ : ∀ μ ∈ S₁, IsFiniteMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsFiniteMeasure μ)
-    (hT₁ : ∀ μ ∈ T₁, IsFiniteMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsFiniteMeasure μ) :
+    (hS₁ : ∀ μ ∈ S₁, μ Set.univ ≤ 1) (hS₂ : ∀ μ ∈ S₂, μ Set.univ ≤ 1)
+    (hT₁ : ∀ μ ∈ T₁, μ Set.univ ≤ 1) (hT₂ : ∀ μ ∈ T₂, μ Set.univ ≤ 1) :
     echernoffDiv (Set.image2 Measure.prod S₁ T₁) (Set.image2 Measure.prod S₂ T₂)
       ≤ echernoffDiv S₁ S₂ + echernoffDiv T₁ T₂ := by
   unfold echernoffDiv
@@ -266,7 +270,7 @@ theorem echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (
   simp_rw [ENNReal.add_iInf₂]
   refine le_iInf₂ fun R₁ _ ↦ le_iInf₂ fun R₂ _ ↦ iInf₂_le_of_le (R₁.prod R₂) inferInstance ?_
   rw [maxUtility_prod_eq_add _ _ hS₁ hT₁, maxUtility_prod_eq_add _ _ hS₂ hT₂,
-    toENNReal_maxUtility_add_maxUtility, toENNReal_maxUtility_add_maxUtility]
+    toENNReal_maxUtility_add_maxUtility hS₁ hT₁, toENNReal_maxUtility_add_maxUtility hS₂ hT₂]
   exact max_add_add_le_max_add_max
 
 /-! ### Sets of measures exchanged by an involution -/
@@ -295,11 +299,10 @@ private lemma exists_map_eq_self_maxUtility_le (hφ : Measurable φ)
     (Set.mem_univ (R.map φ)) zero_le zero_le ENNReal.inv_two_add_inv_two
   dsimp only at h_conv
   rw [← maxUtility_involutive _ _ hφ hφ_inv, hφST] at h_conv
-  refine (EReal.toENNReal_le_toENNReal h_conv).trans_eq ?_
+  refine (EReal.toENNReal_le_toENNReal h_conv).trans ?_
   simp_rw [EReal.smul_ennreal_eq_mul]
-  rw [EReal.toENNReal_add (by positivity [maxUtility_nonneg R (S := S)])
-      (by positivity [maxUtility_nonneg R (S := T)]),
-    EReal.toENNReal_mul (by positivity), EReal.toENNReal_mul (by positivity),
+  refine EReal.toENNReal_add_le.trans_eq ?_
+  rw [EReal.toENNReal_mul (by positivity), EReal.toENNReal_mul (by positivity),
     EReal.toENNReal_coe]
 
 /-- If a measurable involution maps `S` to `T`, the e-Rényi divergence of order `1/2` between `S`
