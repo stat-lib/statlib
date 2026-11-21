@@ -42,6 +42,7 @@ import Statlib.Divergence.MutualInformation.Basic
 import Statlib.Divergence.MutualInformation.Bool
 import Statlib.Divergence.MutualInformation.Estimation
 import Statlib.Divergence.MutualInformation.LeftRight
+import Statlib.Divergence.Pinsker
 import Statlib.Divergence.Renyi.Basic
 import Statlib.Divergence.Renyi.Bernoulli
 import Statlib.Divergence.Renyi.ChainRule
