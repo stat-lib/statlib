@@ -192,10 +192,10 @@ lemma continuous_fDiv_bernoulliMeasure_left {q : I} (hq0 : q ≠ 0) (hq1 : q ≠
     fDiv_bernoulliMeasure_of_ne_zero_of_ne_one Bool.false_ne_true.symm _ hq0 hq1]
   refine Continuous.add ?_ ?_
   · exact (ENNReal.continuous_const_mul ENNReal.ofReal_ne_top).comp
-      (f.continuous.comp (ENNReal.continuous_ofReal.comp (continuous_subtype_val.div_const _)))
+      (f.continuous.comp (ENNReal.continuous_ofReal.comp (continuous_subtypeVal.div_const _)))
   · exact (ENNReal.continuous_const_mul ENNReal.ofReal_ne_top).comp
       (f.continuous.comp (ENNReal.continuous_ofReal.comp
-        ((continuous_const.sub continuous_subtype_val).div_const _)))
+        ((continuous_const.sub continuous_subtypeVal).div_const _)))
 
 /-- For `p ≠ q`, the binary f-divergence `p' ↦ d_f(p', q)` is continuous at `p`. For `q ∉ {0, 1}`,
 it is continuous everywhere (`continuous_fDiv_bernoulliMeasure_left`), but for `q ∈ {0, 1}` and
@@ -208,21 +208,21 @@ lemma continuousAt_fDiv_bernoulliMeasure_left {p q : I} (hpq : p ≠ q) :
   obtain ⟨s, hs, hx, hy⟩ := dirac_ne_dirac_iff_exists_measurableSet.mp hxy
   simp_rw [fDiv_bernoulliMeasure_of_mem_of_notMem hs hx hy]
   have h_ofReal : Continuous fun p : I ↦ ENNReal.ofReal p :=
-    ENNReal.continuous_ofReal.comp continuous_subtype_val
+    ENNReal.continuous_ofReal.comp continuous_subtypeVal
   have h_ofReal_sub : Continuous fun p : I ↦ ENNReal.ofReal (1 - p) :=
-    ENNReal.continuous_ofReal.comp (continuous_const.sub continuous_subtype_val)
+    ENNReal.continuous_ofReal.comp (continuous_const.sub continuous_subtypeVal)
   rcases eq_or_ne q 0 with rfl | hq0
   · simp_rw [fDiv_bernoulliMeasure_zero_right Bool.false_ne_true.symm]
     refine (f.continuous.comp h_ofReal_sub).continuousAt.add
       (ENNReal.Tendsto.const_mul (h_ofReal.tendsto p) (Or.inl ?_))
     rw [ENNReal.ofReal_ne_zero_iff]
-    exact lt_of_le_of_ne p.2.1 (coe_ne_zero.mpr hpq).symm
+    exact lt_of_le_of_ne p.property.1 (coe_ne_zero.mpr hpq).symm
   rcases eq_or_ne q 1 with rfl | hq1
   · simp_rw [fDiv_bernoulliMeasure_one_right Bool.false_ne_true.symm]
     refine (f.continuous.comp h_ofReal).continuousAt.add
       (ENNReal.Tendsto.const_mul (h_ofReal_sub.tendsto p) (Or.inl ?_))
     rw [ENNReal.ofReal_ne_zero_iff, sub_pos]
-    exact lt_of_le_of_ne p.2.2 (coe_ne_one.mpr hpq)
+    exact lt_of_le_of_ne p.property.2 (coe_ne_one.mpr hpq)
   exact (continuous_fDiv_bernoulliMeasure_left hq0 hq1).continuousAt
 
 /-- Let `r₁ ≤ r₂`. If there are pairs `(a, b)` with `a ≥ r₁` arbitrarily close to `r₁`, `b ≥ r₂`
@@ -291,8 +291,8 @@ theorem fDiv_bernoulliMeasure_le_of_lintegral_eq (μ ν : Measure 𝓨) [IsProba
   have h_lt (ρ : Measure 𝓨) : ∀ᵐ z ∂ρ, g z < ∞ :=
     ae_of_all _ fun z ↦ (hg1 z).trans_lt ENNReal.one_lt_top
   refine fDiv_bernoulliMeasure_le_of_integral_comp_eq μ ν hg' ?_ ?_
-  · rw [integral_toReal hg.aemeasurable (h_lt μ), ← hp, ENNReal.toReal_ofReal p.2.1]
-  · rw [integral_toReal hg.aemeasurable (h_lt ν), ← hq, ENNReal.toReal_ofReal q.2.1]
+  · rw [integral_toReal hg.aemeasurable (h_lt μ), ← hp, ENNReal.toReal_ofReal p.property.1]
+  · rw [integral_toReal hg.aemeasurable (h_lt ν), ← hq, ENNReal.toReal_ofReal q.property.1]
 
 /-- **Data processing for the mean through a kernel**: for a Markov kernel `κ` to the unit
 interval such that `κ ∘ₘ μ` and `κ ∘ₘ ν` have means `p` and `q`, `d_f(p, q) ≤ D_f(μ, ν)`. -/

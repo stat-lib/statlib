@@ -49,7 +49,7 @@ open scoped ENNReal NNReal
 namespace unitInterval
 
 lemma coe_toNNReal_eq_ofReal (p : I) : (toNNReal p : ℝ≥0∞) = ENNReal.ofReal p := by
-  rw [ENNReal.ofReal, show Real.toNNReal p = toNNReal p from Real.toNNReal_of_nonneg p.2.1]
+  rw [ENNReal.ofReal, show Real.toNNReal p = toNNReal p from Real.toNNReal_of_nonneg p.property.1]
 
 lemma coe_toNNReal_symm_eq_ofReal (p : I) :
     (toNNReal (σ p) : ℝ≥0∞) = ENNReal.ofReal (1 - p) := by
@@ -57,7 +57,8 @@ lemma coe_toNNReal_symm_eq_ofReal (p : I) :
 
 /-- The inclusion of the unit interval in `ℝ` is integrable with respect to any finite measure. -/
 lemma integrable_coe (μ : Measure I) [IsFiniteMeasure μ] : Integrable (fun p : I ↦ (p : ℝ)) μ :=
-  .of_bound (by fun_prop) 1 (ae_of_all _ fun p ↦ by simpa [abs_of_nonneg p.2.1] using p.2.2)
+  .of_bound (by fun_prop) 1
+    (ae_of_all _ fun p ↦ by simpa [abs_of_nonneg p.property.1] using p.property.2)
 
 end unitInterval
 
@@ -160,10 +161,10 @@ lemma bernoulliMeasure_eq_withDensity [DecidableEq 𝓧] (hxy : x ≠ y) (p : I)
     ite_eq_left rfl, ite_eq_right hxy.symm, smul_smul, smul_smul]
   simp only [coe_toNNReal_eq_ofReal, coe_symm_eq]
   congr 1 <;> congr 1
-  · rw [← ENNReal.ofReal_mul q.2.1]
+  · rw [← ENNReal.ofReal_mul q.property.1]
     congr 1
     field_simp
-  · rw [← ENNReal.ofReal_mul (sub_nonneg.2 q.2.2)]
+  · rw [← ENNReal.ofReal_mul (sub_nonneg.2 q.property.2)]
     congr 1
     field_simp
 
@@ -215,8 +216,8 @@ lemma bernoulliKernel_comp_real_apply_singleton_left [MeasurableSingletonClass �
     (hxy : x ≠ y) (μ : Measure I) [IsFiniteMeasure μ] :
     (bernoulliKernel x y ∘ₘ μ).real {x} = ∫ p, (p : ℝ) ∂μ := by
   rw [measureReal_def, bernoulliKernel_comp_apply_singleton_left hxy,
-    ← ofReal_integral_eq_lintegral_ofReal (integrable_coe μ) (ae_of_all _ fun p ↦ p.2.1),
-    ENNReal.toReal_ofReal (integral_nonneg fun p ↦ p.2.1)]
+    ← ofReal_integral_eq_lintegral_ofReal (integrable_coe μ) (ae_of_all _ fun p ↦ p.property.1),
+    ENNReal.toReal_ofReal (integral_nonneg fun p ↦ p.property.1)]
 
 /-- The composition of `bernoulliKernel x y` with a probability measure on the unit interval with
 mean `p` is `Ber(x, y, p)`. -/
@@ -225,10 +226,11 @@ lemma bernoulliKernel_comp_eq_bernoulliMeasure (x y : 𝓧) (μ : Measure I) [Is
     bernoulliKernel x y ∘ₘ μ = Ber(x, y, p) := by
   have h_int := integrable_coe μ
   have h1 : ∫⁻ q, ENNReal.ofReal q ∂μ = ENNReal.ofReal p := by
-    rw [hp, ofReal_integral_eq_lintegral_ofReal h_int (ae_of_all _ fun q ↦ q.2.1)]
+    rw [hp, ofReal_integral_eq_lintegral_ofReal h_int (ae_of_all _ fun q ↦ q.property.1)]
   have h2 : ∫⁻ q, ENNReal.ofReal (1 - q) ∂μ = ENNReal.ofReal (1 - p) := by
     have h_int' : Integrable (fun q : I ↦ 1 - (q : ℝ)) μ := (integrable_const 1).sub h_int
-    rw [← ofReal_integral_eq_lintegral_ofReal h_int' (ae_of_all _ fun q ↦ sub_nonneg.mpr q.2.2),
+    rw [← ofReal_integral_eq_lintegral_ofReal h_int'
+        (ae_of_all _ fun q ↦ sub_nonneg.mpr q.property.2),
       integral_sub (integrable_const 1) h_int, hp]
     simp
   ext s hs

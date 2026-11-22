@@ -97,15 +97,15 @@ lemma isEVar_bernoulli_iff :
     · rintro _ ⟨q, hq, rfl⟩
       simpa [lintegral_bernoulliMeasure] using h q hq
   rw [h_iff]
-  refine ⟨fun h ↦ ⟨by simpa using h 0 δ.2.1, h δ le_rfl⟩, fun ⟨h0, hδ⟩ q hq ↦ ?_⟩
+  refine ⟨fun h ↦ ⟨by simpa using h 0 δ.property.1, h δ le_rfl⟩, fun ⟨h0, hδ⟩ q hq ↦ ?_⟩
   rcases eq_or_ne δ 0 with rfl | hδ0
-  · obtain rfl : q = 0 := Subtype.ext (le_antisymm hq q.2.1)
+  · obtain rfl : q = 0 := Subtype.ext (le_antisymm hq q.property.1)
     simpa using h0
   have hδ_pos : (0 : ℝ) < δ := coe_pos.mpr (unitInterval.pos_iff_ne_zero.mpr hδ0)
-  have hδ_le : (δ : ℝ) ≤ 1 := δ.2.2
+  have hδ_le : (δ : ℝ) ≤ 1 := δ.property.2
   -- the distribution with parameter `q` is a mixture of those with parameters `δ` and `0`
   set t := (q : ℝ) / δ
-  have ht_nonneg : 0 ≤ t := div_nonneg q.2.1 hδ_pos.le
+  have ht_nonneg : 0 ≤ t := div_nonneg q.property.1 hδ_pos.le
   have ht_le : t ≤ 1 := (div_le_one hδ_pos).mpr hq
   calc ENNReal.ofReal q * X true + ENNReal.ofReal (1 - q) * X false
   _ = ENNReal.ofReal t * (ENNReal.ofReal δ * X true + ENNReal.ofReal (1 - δ) * X false)
@@ -149,12 +149,12 @@ theorem isNumeraire_bernoulli {p : I} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) (hδp
       linarith
     · rw [← ENNReal.ofReal_mul hδ_pos.le, ← ENNReal.ofReal_mul hδ_one.le,
         ← ENNReal.ofReal_add (by positivity) (mul_nonneg hδ_one.le (div_nonneg
-          (by linarith [p.2.2]) hδ_one.le)), ENNReal.ofReal_le_one]
+          (by linarith [p.property.2]) hδ_one.le)), ENNReal.ofReal_le_one]
       field_simp
       linarith
   -- the finite support of `X` has full measure
   have h_fsupport : Ber(true, false, p) X.fsupport = 1 := by
-    rcases eq_or_lt_of_le p.2.2 with hp1 | hp1
+    rcases eq_or_lt_of_le p.property.2 with hp1 | hp1
     · obtain rfl : p = 1 := Subtype.ext hp1
       rw [bernoulliMeasure_one, Measure.dirac_apply_of_mem]
       simp [X, hδ_pos]
@@ -173,7 +173,7 @@ theorem isNumeraire_bernoulli {p : I} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) (hδp
   simp only [X, ↓reduceIte, Bool.false_eq_true]
   gcongr ?_ + ?_
   · rw [ofReal_mul_div_ofReal_div hp_pos hδ_pos]
-  · rcases eq_or_lt_of_le p.2.2 with hp1 | hp1
+  · rcases eq_or_lt_of_le p.property.2 with hp1 | hp1
     · simp [hp1]
     · rw [ofReal_mul_div_ofReal_div (sub_pos.mpr hp1) hδ_one]
 
@@ -193,7 +193,7 @@ theorem maxUtility_bernoulli {p : I} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) (hδp 
   simp only [↓reduceIte, Bool.false_eq_true]
   rw [ENNReal.log_ofReal_of_pos (div_pos hp_pos hδ_pos), EReal.coe_ennreal_ofReal,
     max_eq_left hp_pos.le]
-  rcases eq_or_lt_of_le p.2.2 with hp1 | hp1
+  rcases eq_or_lt_of_le p.property.2 with hp1 | hp1
   · simp [hp1]
   rw [ENNReal.log_ofReal_of_pos (div_pos (sub_pos.mpr hp1) hδ_one), EReal.coe_ennreal_ofReal,
     max_eq_left (sub_pos.mpr hp1).le]
@@ -206,7 +206,8 @@ theorem maxUtility_bernoulli_singleton (hδ_pos : 0 < δ) (hδ_lt : δ < 1) (s :
     maxUtility Ber(true, false, s) {Ber(true, false, δ)} logUtility = klBerReal s δ := by
   rw [maxUtility_singleton_eq_klDiv,
     klDiv_bernoulliMeasure_eq_klBerReal (by decide) s hδ_pos.ne' hδ_lt.ne,
-    EReal.coe_ennreal_ofReal, max_eq_left (klBerReal_nonneg s.2.1 s.2.2 (coe_pos.mpr hδ_pos)
+    EReal.coe_ennreal_ofReal,
+    max_eq_left (klBerReal_nonneg s.property.1 s.property.2 (coe_pos.mpr hδ_pos)
       (coe_lt_one.mpr hδ_lt))]
 
 /-- The likelihood ratio of `Ber(true, false, p)` with respect to `Ber(true, false, δ)` is an
@@ -229,7 +230,7 @@ private lemma le_maxUtility_bernoulli {p : I} (hδ_pos : 0 < δ) (hδ_lt : δ < 
   simp only [Function.comp_apply, ↓reduceIte, Bool.false_eq_true, logUtility_apply]
   rw [ENNReal.log_ofReal_of_pos (div_pos hp_pos hδ_pos),
     ENNReal.log_ofReal_of_pos (div_pos (by linarith) hδ_one), EReal.coe_ennreal_ofReal,
-    EReal.coe_ennreal_ofReal, max_eq_left s.2.1, max_eq_left (by linarith [s.2.2])]
+    EReal.coe_ennreal_ofReal, max_eq_left s.property.1, max_eq_left (by linarith [s.property.2])]
   norm_cast
 
 /-! ### Bernoulli distributions with parameter at least `η`

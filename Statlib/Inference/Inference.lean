@@ -109,7 +109,7 @@ theorem measurable_kernel_of_measure (θ Ω : Type*) [MeasurableSpace θ]
 noncomputable def inv_rangeFactorization_of_measure (θ Ω : Type*)
     [MeasurableSpace θ] [Nonempty θ] [mΩ : MeasurableSpace Ω] :
     Set.range (of_measure θ Ω) → Measure Ω :=
-  fun κ => κ.1 Classical.ofNonempty
+  fun κ => κ.val Classical.ofNonempty
 
 @[simp]
 theorem inv_rangeFactorization_of_measure_apply (θ Ω : Type*)
@@ -131,7 +131,7 @@ theorem rangeFactorization_of_measure_inv (θ Ω : Type*)
 theorem measurable_inv_rangeFactorization_of_measure (θ Ω : Type*)
     [MeasurableSpace θ] [Nonempty θ] [mΩ : MeasurableSpace Ω] :
     Measurable (inv_rangeFactorization_of_measure θ Ω) :=
-  (measurable_eval Classical.ofNonempty).comp measurable_subtype_coe
+  (measurable_eval Classical.ofNonempty).comp measurable_subtypeVal
 
 /-- The range factorization of the constant-kernel map as a measurable equivalence. -/
 noncomputable def measurableEquiv_rangeFactorization_of_measure
@@ -150,14 +150,14 @@ noncomputable def imageToMeasure (θ Ω : Type*) [MeasurableSpace θ]
     (of_measure θ Ω) '' s → s :=
   fun κ => ⟨inv_rangeFactorization_of_measure θ Ω
     (Set.inclusion (Set.image_subset_range (of_measure θ Ω) s) κ), by
-    obtain ⟨μ, hμ, hκ⟩ := κ.2
+    obtain ⟨μ, hμ, hκ⟩ := κ.property
     simpa [inv_rangeFactorization_of_measure, ← hκ, of_measure]⟩
 
 theorem measurable_imageToMeasure (θ Ω : Type*) [MeasurableSpace θ]
     [Nonempty θ] [mΩ : MeasurableSpace Ω] (s : Set (Measure Ω)) :
     Measurable (imageToMeasure θ Ω s) :=
   ((measurable_inv_rangeFactorization_of_measure θ Ω).comp
-    measurable_subtype_coe.subtype_mk).subtype_mk
+    measurable_subtypeVal.subtype_mk).subtype_mk
 
 end Kernel
 

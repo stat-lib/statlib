@@ -64,8 +64,8 @@ lemma rightDerivStieltjes_statInfoDivFun_of_nonneg (hβ : 0 ≤ β) {x : ℝ} (h
     · have h_half : 0 < γ / β / 2 := by linarith
       refine (iInf_le _ ⟨γ / β / 2, h_half⟩).trans_eq ?_
       simp [h_pos h_half, hc, show ¬ γ / β ≤ γ / β / 2 by linarith]
-  · rw [h_pos r.2]
-    exact EReal.coe_le_coe_iff.mpr (by split_ifs <;> linarith [mem_Ioi.mp r.2])
+  · rw [h_pos r.property]
+    exact EReal.coe_le_coe_iff.mpr (by split_ifs <;> linarith [mem_Ioi.mp r.property])
 
 end RightDeriv
 

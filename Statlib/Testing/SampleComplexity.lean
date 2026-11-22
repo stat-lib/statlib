@@ -126,7 +126,7 @@ lemma priorSampleComplexity_le_div_add_one_of_forall {x D : ℝ≥0∞}
   _ ≤ x / D + 1 := by
     rw [← hq, Nat.cast_add, Nat.cast_one]
     gcongr
-    exact_mod_cast Nat.floor_le q.2
+    exact_mod_cast Nat.floor_le q.property
 
 /-- If the Bayes risk is non-increasing in the number of samples, then the sample complexity is
 at most `n` if and only if the Bayes risk of `P n` is at most `δ`. -/

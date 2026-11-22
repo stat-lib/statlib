@@ -228,7 +228,7 @@ instance : Module ℝ≥0 ERealStieltjes where
     simp_rw [this]
     rw [sub_eq_add_neg, EReal.left_distrib_of_nonneg_of_ne_top (x := ((c : ℝ) : EReal))]
     rotate_left
-    · exact EReal.coe_nonneg.mpr c.2
+    · exact EReal.coe_nonneg.mpr c.property
     · exact EReal.coe_ne_top _
     rw [mul_comm  _ (f x), ← EReal.neg_mul, mul_comm]
     congr 1
@@ -248,8 +248,8 @@ instance : Module ℝ≥0 ERealStieltjes where
     · simp only [smul_apply, coe_add, EReal.coe_ennreal_add]
       have h_eq (a : ℝ≥0) : (a : EReal) = ((a : ℝ) : EReal) := rfl
       rw [h_eq, h_eq, EReal.right_distrib_of_nonneg]
-      · exact EReal.coe_nonneg.mpr a.2
-      · exact EReal.coe_nonneg.mpr b.2
+      · exact EReal.coe_nonneg.mpr a.property
+      · exact EReal.coe_nonneg.mpr b.property
     · have : (a : EReal) = ((a : ℝ) : EReal) := rfl
       rw [smul_apply, this, EReal.mul_ne_top]
       simp [hfx]

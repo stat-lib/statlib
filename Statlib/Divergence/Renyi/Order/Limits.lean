@@ -101,7 +101,7 @@ private lemma exists_lt_renyiDiv_of_klDiv_eq_top (h : klDiv μ ν = ∞) (M : �
       fun h ↦ h_ms ((renyiDiv_eq_top_iff_mutuallySingular_of_lt_one ha0.le ha.2).mp h)
     have h_lt := hM.trans_le (one_sub_integral_rpow_div_le_toReal_renyiDiv ha0 ha.2 h_ms)
     rw [← ENNReal.ofReal_toReal h_top, ← ENNReal.ofReal_coe_nnreal]
-    exact (ENNReal.ofReal_lt_ofReal_iff'.mpr ⟨h_lt, M.2.trans_lt h_lt⟩)
+    exact (ENNReal.ofReal_lt_ofReal_iff'.mpr ⟨h_lt, M.property.trans_lt h_lt⟩)
   set c := ∫ x, ((∂μ/∂ν) x).toReal ∂ν with hc_def
   -- decomposition `(1 - I a) / (1 - a) = (1 - c) / (1 - a) + ∫ slope`
   have h_decomp : ∀ a ∈ Ico (2⁻¹ : ℝ) 1, (1 - ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν) / (1 - a)

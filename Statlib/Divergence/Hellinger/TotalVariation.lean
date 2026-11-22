@@ -234,7 +234,7 @@ theorem one_sub_sqrt_one_sub_exp_le_one_sub_tvDist_div_two [IsProbabilityMeasure
     [IsProbabilityMeasure ν] (h_ms : ¬ μ ⟂ₘ ν) :
     1 - √(1 - exp (-(renyiDiv 2⁻¹ μ ν).toReal)) ≤ 1 - tvDist μ ν / 2 := by
   have h_sq : exp (-(renyiDiv 2⁻¹ μ ν).toReal) = (1 - (sqHellinger μ ν).toReal) ^ 2 := by
-    rw [← exp_neg_toReal_renyiDiv_inv_two_div_two h_ms, ← exp_nat_mul]
+    rw [← exp_neg_toReal_renyiDiv_inv_two_div_two h_ms, ← exp_natCast_mul]
     congr 1
     ring
   rw [h_sq]
