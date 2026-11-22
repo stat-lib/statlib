@@ -118,8 +118,8 @@ lemma klDiv_bernoulliMeasure_eq_klBerReal (hxy : x ≠ y) (p : I) {q : I} (hq : 
   classical
   have hq0 : (0 : ℝ) < q := coe_pos.2 (unitInterval.pos_iff_ne_zero.2 hq)
   have hq1' : (0 : ℝ) < 1 - q := sub_pos.2 (coe_lt_one.2 (unitInterval.lt_one_iff_ne_one.2 hq1))
-  have hp0 : (0 : ℝ) ≤ p := p.2.1
-  have hp1 : (0 : ℝ) ≤ 1 - p := sub_nonneg.2 p.2.2
+  have hp0 : (0 : ℝ) ≤ p := p.property.1
+  have hp1 : (0 : ℝ) ≤ 1 - p := sub_nonneg.2 p.property.2
   rw [klDiv_eq_lintegral_klFun_of_ac (bernoulliMeasure_absolutelyContinuous hxy p hq hq1),
     lintegral_congr_ae ((rnDeriv_bernoulliMeasure hxy p hq hq1).mono fun z hz ↦ by rw [hz]),
     lintegral_bernoulliMeasure]
@@ -141,11 +141,11 @@ lemma ofReal_klBerReal_le_klDiv_bernoulliMeasure (hxy : x ≠ y) (p q : I) :
   rcases eq_or_ne q 0 with rfl | hq0
   · -- `klBerReal p 0 = (1 - p) * log (1 - p) ≤ 0`
     refine (ENNReal.ofReal_of_nonpos ?_).trans_le zero_le
-    simpa [klBerReal] using mul_log_nonpos (sub_nonneg.2 p.2.2) (sub_le_self _ p.2.1)
+    simpa [klBerReal] using mul_log_nonpos (sub_nonneg.2 p.property.2) (sub_le_self _ p.property.1)
   rcases eq_or_ne q 1 with rfl | hq1
   · -- `klBerReal p 1 = p * log p ≤ 0`
     refine (ENNReal.ofReal_of_nonpos ?_).trans_le zero_le
-    simpa [klBerReal] using mul_log_nonpos p.2.1 p.2.2
+    simpa [klBerReal] using mul_log_nonpos p.property.1 p.property.2
   rw [klDiv_bernoulliMeasure_eq_klBerReal hxy p hq0 hq1]
 
 /-- The Kullback-Leibler divergence between two priors on `Bool` is the binary Kullback-Leibler

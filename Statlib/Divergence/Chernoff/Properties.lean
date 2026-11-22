@@ -288,10 +288,10 @@ private lemma chernoffDiv_one_le_iSup_mul_renyiDiv_of_isProbabilityMeasure [IsPr
   have h_bound : ∀ x y : ℝ≥0∞, x ≠ ∞ → y ≠ ∞ → p * x.toReal + (1 - p) * y.toReal ≤ s.toReal + ε →
       ENNReal.ofReal p * x + ENNReal.ofReal (1 - p) * y ≤ s + ε := by
     intro x y hx hy h
-    rw [← ENNReal.ofReal_toReal hx, ← ENNReal.ofReal_toReal hy, ← ENNReal.ofReal_mul p.2.1,
-      ← ENNReal.ofReal_mul (sub_nonneg.mpr p.2.2), ← ENNReal.ofReal_add
-        (mul_nonneg p.2.1 ENNReal.toReal_nonneg)
-        (mul_nonneg (sub_nonneg.mpr p.2.2) ENNReal.toReal_nonneg),
+    rw [← ENNReal.ofReal_toReal hx, ← ENNReal.ofReal_toReal hy, ← ENNReal.ofReal_mul p.property.1,
+      ← ENNReal.ofReal_mul (sub_nonneg.mpr p.property.2), ← ENNReal.ofReal_add
+        (mul_nonneg p.property.1 ENNReal.toReal_nonneg)
+        (mul_nonneg (sub_nonneg.mpr p.property.2) ENNReal.toReal_nonneg),
       ← ENNReal.ofReal_toReal hs_top, ← ENNReal.ofReal_coe_nnreal,
       ← ENNReal.ofReal_add ENNReal.toReal_nonneg ε.coe_nonneg]
     exact ENNReal.ofReal_le_ofReal h

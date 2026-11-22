@@ -160,7 +160,7 @@ lemma expNeg_midpoint_sq (x y : ℝ≥0∞) : expNeg (2⁻¹ * (x + y)) ^ 2 = ex
   · simp [ENNReal.mul_top]
   have hxy : 2⁻¹ * (x + y) ≠ ∞ := ENNReal.mul_ne_top (by simp) (ENNReal.add_ne_top.mpr ⟨hx, hy⟩)
   rw [expNeg_of_ne_top hx, expNeg_of_ne_top hy, expNeg_of_ne_top hxy, ← Real.exp_add,
-    ← Real.exp_nat_mul, ENNReal.toReal_mul, ENNReal.toReal_add hx hy]
+    ← Real.exp_natCast_mul, ENNReal.toReal_mul, ENNReal.toReal_add hx hy]
   congr 1
   simp only [ENNReal.toReal_inv, ENNReal.toReal_ofNat, Nat.cast_ofNat]
   ring

@@ -43,8 +43,8 @@ theorem renyiDiv_bernoulliMeasure (ha0 : 0 < a) (ha1 : a < 1) (hxy : x ≠ y) (p
   classical
   have hq0 : (0 : ℝ) < q := coe_pos.2 (unitInterval.pos_iff_ne_zero.2 hq)
   have hq1' : (0 : ℝ) < 1 - q := sub_pos.2 (coe_lt_one.2 (unitInterval.lt_one_iff_ne_one.2 hq1))
-  have hp0 : (0 : ℝ) ≤ p := p.2.1
-  have hp1 : (0 : ℝ) ≤ 1 - p := sub_nonneg.2 p.2.2
+  have hp0 : (0 : ℝ) ≤ p := p.property.1
+  have hp1 : (0 : ℝ) ≤ 1 - p := sub_nonneg.2 p.property.2
   have h_ms : ¬ Ber(x, y, p) ⟂ₘ Ber(x, y, q) := fun h ↦ IsProbabilityMeasure.ne_zero Ber(x, y, p)
     (Measure.eq_zero_of_absolutelyContinuous_of_mutuallySingular
       (bernoulliMeasure_absolutelyContinuous hxy p hq hq1) h)

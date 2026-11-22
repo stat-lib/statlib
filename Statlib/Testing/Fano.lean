@@ -88,7 +88,7 @@ theorem ofReal_binEntropy_sub_binEntropy_bayesBinaryRisk_le_jensenShannon (hα :
     norm_num
   have h_kl : klDiv ρ ξ = ENNReal.ofReal (klBerReal α 2⁻¹) := by
     rw [hρ, Measure.boolMeasure_coe_eq_ofReal, hξ]
-    exact klDiv_boolMeasure_ofReal_eq_klBerReal α.2 (by exact_mod_cast hα) (by norm_num)
+    exact klDiv_boolMeasure_ofReal_eq_klBerReal α.property (by exact_mod_cast hα) (by norm_num)
       (by norm_num)
   rw [h_min, h_kl, klBerReal_two_inv_right, klBerReal_two_inv_right] at h
   have h_nonneg : 0 ≤ log 2 - binEntropy α := sub_nonneg.2 binEntropy_le_log_two
@@ -172,7 +172,7 @@ theorem ofReal_mul_log_add_mul_log_le_mul_renyiDiv (hβ0 : 0 ≤ β) (hβ : β �
       ENNReal.ofReal_of_nonpos]
     · exact zero_le
     · exact mul_nonpos_of_nonneg_of_nonpos (by linarith)
-        (Real.log_nonpos (by linarith [α.2]) (by linarith [α.2]))
+        (Real.log_nonpos (by linarith [α.property]) (by linarith [α.property]))
   have hα0' : (0 : ℝ) < α := hB0.trans_le hB_le
   have hB1 : B < 1 := hB_le.trans_lt hα1'
   have h := ofReal_klBerReal_sub_klBerReal_le_mul_renyiDiv μ ν hβ0 hβ hα1

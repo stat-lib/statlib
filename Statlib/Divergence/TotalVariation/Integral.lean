@@ -157,12 +157,13 @@ theorem integral_sub_integral_le_tvDist [IsFiniteMeasure μ] [IsFiniteMeasure ν
 `∫ f ∂μ - ∫ f ∂ν` over measurable functions `f` with `|f| ≤ 1`. -/
 theorem tvDist_eq_iSup_integral_sub [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     tvDist μ ν = ⨆ f : {f : 𝒳 → ℝ // Measurable f ∧ ∀ x, |f x| ≤ 1},
-      (∫ x, f.1 x ∂μ - ∫ x, f.1 x ∂ν) := by
+      (∫ x, f.val x ∂μ - ∫ x, f.val x ∂ν) := by
   have h_bdd : BddAbove (range fun f : {f : 𝒳 → ℝ // Measurable f ∧ ∀ x, |f x| ≤ 1} ↦
-      ∫ x, f.1 x ∂μ - ∫ x, f.1 x ∂ν) := by
+      ∫ x, f.val x ∂μ - ∫ x, f.val x ∂ν) := by
     refine ⟨tvDist μ ν, ?_⟩
     rintro _ ⟨f, rfl⟩
-    exact integral_sub_integral_le_tvDist f.2.1.aestronglyMeasurable (ae_of_all _ f.2.2)
+    exact integral_sub_integral_le_tvDist f.property.1.aestronglyMeasurable
+      (ae_of_all _ f.property.2)
   obtain ⟨s, hs⟩ := exists_isHahnDecomposition μ ν
   refine le_antisymm ?_ ?_
   · -- the supremum is attained at `f = 1` on `sᶜ` and `f = -1` on `s`
@@ -185,6 +186,7 @@ theorem tvDist_eq_iSup_integral_sub [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
   · have : Nonempty {f : 𝒳 → ℝ // Measurable f ∧ ∀ x, |f x| ≤ 1} :=
       ⟨⟨0, measurable_const, fun _ ↦ by simp⟩⟩
     exact ciSup_le fun f ↦
-      integral_sub_integral_le_tvDist f.2.1.aestronglyMeasurable (ae_of_all _ f.2.2)
+      integral_sub_integral_le_tvDist f.property.1.aestronglyMeasurable
+        (ae_of_all _ f.property.2)
 
 end ProbabilityTheory

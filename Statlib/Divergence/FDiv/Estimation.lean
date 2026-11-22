@@ -72,7 +72,7 @@ private lemma fDiv_bernoulliMeasure_bayesRisk_le_of_le (hℓ : Measurable (uncur
   -- an estimator with risk at most `p + ε` for the first problem
   have h_lt : bayesRisk ℓ Q π < ENNReal.ofReal (p + ε) := by
     rw [← hp]
-    exact (ENNReal.ofReal_lt_ofReal_iff (by linarith [p.2.1])).mpr (by linarith)
+    exact (ENNReal.ofReal_lt_ofReal_iff (by linarith [p.property.1])).mpr (by linarith)
   obtain ⟨κ, hκ, hκ_lt⟩ : ∃ κ : Kernel 𝓧 𝓨, ∃ _ : IsMarkovKernel κ,
       avgRisk ℓ Q κ π < ENNReal.ofReal (p + ε) := by
     simpa [bayesRisk, iInf_lt_iff] using h_lt
@@ -83,10 +83,10 @@ private lemma fDiv_bernoulliMeasure_bayesRisk_le_of_le (hℓ : Measurable (uncur
   obtain ⟨a, ha⟩ := h_mem (avgRisk_le_one hℓ1 Q κ π)
   obtain ⟨b, hb⟩ := h_mem (avgRisk_le_one hℓ1 P κ ξ)
   refine ⟨a, b, ?_, ?_, ?_, fDiv_bernoulliMeasure_avgRisk_le hℓ hℓ1 κ ha hb⟩
-  · rw [← Subtype.coe_le_coe, ← ENNReal.ofReal_le_ofReal_iff a.2.1, ha, hp]
+  · rw [← Subtype.coe_le_coe, ← ENNReal.ofReal_le_ofReal_iff a.property.1, ha, hp]
     exact bayesRisk_le_avgRisk ℓ Q κ π
-  · exact (ENNReal.ofReal_le_ofReal_iff (by linarith [p.2.1])).1 (ha.trans_lt hκ_lt).le
-  · rw [← Subtype.coe_le_coe, ← ENNReal.ofReal_le_ofReal_iff b.2.1, hb, hq]
+  · exact (ENNReal.ofReal_le_ofReal_iff (by linarith [p.property.1])).1 (ha.trans_lt hκ_lt).le
+  · rw [← Subtype.coe_le_coe, ← ENNReal.ofReal_le_ofReal_iff b.property.1, hb, hq]
     exact bayesRisk_le_avgRisk ℓ P κ ξ
 
 /-- **Lower bound on the f-divergence from the Bayes risks**: for a loss with values in `[0, 1]`,

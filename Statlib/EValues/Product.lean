@@ -345,6 +345,6 @@ lemma isNumeraire_pi_numeraire_finset {ι : Type*} {𝓧 : ι → Type*} {s : Fi
     (hS : ∀ i ∈ s, ∀ μ ∈ S i, μ Set.univ ≤ 1) :
     IsNumeraire (fun x ↦ ∏ i : s, numeraire (P i) (S i) (x i))
       (Measure.pi '' (Set.pi Set.univ fun i : s ↦ S i)) (Measure.pi fun i : s ↦ P i) :=
-  isNumeraire_pi_numeraire fun i ↦ hS i i.2
+  isNumeraire_pi_numeraire fun i ↦ hS i i.property
 
 end ProbabilityTheory
